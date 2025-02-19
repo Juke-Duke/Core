@@ -1,5 +1,5 @@
 #ifndef DequeElement
-#error "Type parameter 'DequeElement' is not defined."
+#error Type parameter 'DequeElement' is not defined.
 #endif
 
 #include <core/Core.h>

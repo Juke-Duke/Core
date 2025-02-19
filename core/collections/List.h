@@ -1,5 +1,5 @@
 #ifndef ListElement
-#error "Type parameter 'ListElement' is not defined."
+#error Type parameter 'ListElement' is not defined.
 #endif
 
 #include <core/Core.h>

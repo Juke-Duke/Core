@@ -1,17 +1,17 @@
 #ifndef DictionaryKey
-#error "Type parameter 'DictionaryKey' is not defined."
+#error Type parameter 'DictionaryKey' is not defined.
 #endif
 
 #ifndef DictionaryKeyHash
-#error "Function 'DictionaryKeyHash' is not defined."
+#error Function 'DictionaryKeyHash' is not defined.
 #endif
 
 #ifndef DictionaryKeyEqual
-#error "Function 'DictionaryKeyEqual' is not defined."
+#error Function 'DictionaryKeyEqual' is not defined.
 #endif
 
 #ifndef DictionaryValue
-#error "Type parameter 'DictionaryValue' is not defined."
+#error Type parameter 'DictionaryValue' is not defined.
 #endif
 
 #include <core/Core.h>

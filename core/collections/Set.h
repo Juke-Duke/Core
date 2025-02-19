@@ -1,14 +1,14 @@
 #ifndef SetElement
-#error "Type parameter 'SetElement' is not defined."
+#error Type parameter 'SetElement' is not defined.
 #endif
 
 #ifndef SetElementHash
-#error "Function 'SetElementHash' is not defined."
+#error Function 'SetElementHash' is not defined.
 #define SetElementHash(key)
 #endif
 
 #ifndef SetElementEqual
-#error "Function 'SetElementEqual' is not defined."
+#error Function 'SetElementEqual' is not defined.
 #define SetElementEqual(a, b)
 #endif
 
@@ -41,7 +41,7 @@ static UInt SetCount(SetElement)(Set(SetElement) const* set) {
   return DictionaryCount(SetElement, Unit)(set);
 }
 
-static Bool SetInsert(SetElement)(Set(SetElement)* set, SetElement element) {
+static Bool SetInsert(SetElement)(Set(SetElement) * set, SetElement element) {
   return DictionaryInsert(SetElement, Unit)(set, element, (Unit){}).tag == Option_None;
 }
 
@@ -49,7 +49,7 @@ static Bool SetContains(SetElement)(Set(SetElement) const* set, SetElement eleme
   return DictionaryContainsKey(SetElement, Unit)(set, element);
 }
 
-static Bool SetRemove(SetElement)(Set(SetElement)* set, SetElement element) {
+static Bool SetRemove(SetElement)(Set(SetElement) * set, SetElement element) {
   return DictionaryRemove(SetElement, Unit)(set, element).tag == Option_Some;
 }
 

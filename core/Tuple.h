@@ -1,56 +1,56 @@
 #ifndef TupleArgs
-#error "Define 'TupleArgs' to specify tuple arity."
+#error Define 'TupleArgs' to specify tuple arity.
 #endif
 
 #if TupleArgs < 2
-#error "Tuple arity must be at least 2."
+#error Tuple arity must be at least 2.
 #endif
 
 #if TupleArgs > 8
-#error "Tuple arity must be at most 8."
+#error Tuple arity must be at most 8.
 #endif
 
 #ifndef TupleT0
-#error "Type parameter 'TupleT0' is not defined."
+#error Type parameter 'TupleT0' is not defined.
 #endif
 
 #ifndef TupleT1
-#error "Type parameter 'TupleT1' is not defined."
+#error Type parameter 'TupleT1' is not defined.
 #endif
 
 #if TupleArgs >= 3
 #ifndef TupleT2
-#error "Type parameter 'TupleT2' is not defined."
+#error Type parameter 'TupleT2' is not defined.
 #endif
 #endif
 
 #if TupleArgs >= 4
 #ifndef TupleT3
-#error "Type parameter 'TupleT3' is not defined."
+#error Type parameter 'TupleT3' is not defined.
 #endif
 #endif
 
 #if TupleArgs >= 5
 #ifndef TupleT4
-#error "Type parameter 'TupleT4' is not defined."
+#error Type parameter 'TupleT4' is not defined.
 #endif
 #endif
 
 #if TupleArgs >= 6
 #ifndef TupleT5
-#error "Type parameter 'TupleT5' is not defined."
+#error Type parameter 'TupleT5' is not defined.
 #endif
 #endif
 
 #if TupleArgs >= 7
 #ifndef TupleT6
-#error "Type parameter 'TupleT6' is not defined."
+#error Type parameter 'TupleT6' is not defined.
 #endif
 #endif
 
 #if TupleArgs == 8
 #ifndef TupleT7
-#error "Type parameter 'TupleT7' is not defined."
+#error Type parameter 'TupleT7' is not defined.
 #endif
 #endif
 

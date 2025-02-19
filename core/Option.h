@@ -1,5 +1,5 @@
 #ifndef OptionValue
-#error "Type parameter 'OptionValue' is not defined."
+#error Type parameter 'OptionValue' is not defined.
 #define OptionValue int
 #endif
 

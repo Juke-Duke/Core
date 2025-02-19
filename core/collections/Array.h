@@ -1,5 +1,5 @@
 #ifndef ArrayElement
-#error "Type parameter 'ArrayElement' is not defined."
+#error Type parameter 'ArrayElement' is not defined.
 #endif
 
 #include <core/Core.h>
