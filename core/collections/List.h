@@ -66,20 +66,11 @@ static void ListSetAt(ListElement)(List(ListElement) * list, UInt index, ListEle
 static void ListAppend(ListElement)(List(ListElement) * list, ListElement value) {
   if (list->count == list->elements.capacity) {
     list->elements.capacity = list->elements.capacity * 2 + 8;
-
-    Array(ListElement) newElements = ArrayCreateWithCapacity(ListElement)(list->elements.capacity);
-
-    for (UInt i = 0; i < list->count; i++) {
-      ArraySetAt(ListElement)(&newElements, i, ArrayAt(ListElement)(&list->elements, i));
-    }
-
-    ArrayDestroy(ListElement)(list->elements);
-
-    list->elements = newElements;
+    ArrayResize(ListElement)(&list->elements, list->elements.capacity);
   }
 
   ArraySetAt(ListElement)(&list->elements, list->count, value);
-  list->count++;
+  ++list->count;
 }
 
 static void ListDestroy(ListElement)(List(ListElement) list) {

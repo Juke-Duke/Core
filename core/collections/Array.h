@@ -13,6 +13,7 @@
 #define ArrayCreate(ArrayElement) GENERIC(ArrayCreate, ArrayElement)
 #define ArrayCreateWithCapacity(ArrayElement) GENERIC(ArrayCreateWithCapacity, ArrayElement)
 #define ArrayCapacity(ArrayElement) GENERIC(ArrayCapacity, ArrayElement)
+#define ArrayResize(ArrayElement) GENERIC(ArrayResize, ArrayElement)
 #define ArrayAt(ArrayElement) GENERIC(ArrayAt, ArrayElement)
 #define ArraySetAt(ArrayElement) GENERIC(ArraySetAt, ArrayElement)
 #define ArrayDestroy(ArrayElement) GENERIC(ArrayDestroy, ArrayElement)
@@ -46,6 +47,11 @@ static Array(ArrayElement) ArrayCreateWithCapacity(ArrayElement)(UInt capacity) 
 
 static UInt ArrayCapacity(ArrayElement)(Array(ArrayElement) const* array) {
   return array->capacity;
+}
+
+static void ArrayResize(ArrayElement)(Array(ArrayElement) * array, UInt capacity) {
+  array->elements = (ArrayElement*)realloc(array->elements, sizeof(ArrayElement) * capacity);
+  array->capacity = capacity;
 }
 
 static ArrayElement ArrayAt(ArrayElement)(Array(ArrayElement) const* array, UInt index) {
