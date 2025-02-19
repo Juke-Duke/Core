@@ -1,4 +1,3 @@
-#include <stdio.h>
 #ifndef DequeElement
 #error "Type parameter 'DequeElement' is not defined."
 #endif
