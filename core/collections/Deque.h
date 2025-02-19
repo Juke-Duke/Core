@@ -1,3 +1,4 @@
+#include <stdio.h>
 #ifndef DequeElement
 #error "Type parameter 'DequeElement' is not defined."
 #endif
@@ -42,20 +43,29 @@ static Deque(DequeElement) DequeDefault(DequeElement)() {
   };
 }
 
-static UInt DequeCount(DequeElement)(Deque(DequeElement)* deque) {
+static UInt DequeCount(DequeElement)(Deque(DequeElement) * deque) {
   return deque->count;
 }
 
-static DequeElement DequeFront(DequeElement)(Deque(DequeElement)* deque) {
-  return ArrayAt(DequeElement)(&deque->ring, deque->front);
+static Option(DequeElement) DequeFront(DequeElement)(Deque(DequeElement) * deque) {
+  if (deque->count == 0) {
+    return OptionNone(DequeElement)();
+  }
+
+  return OptionSome(DequeElement)(ArrayAt(DequeElement)(&deque->ring, deque->front));
 }
 
-static DequeElement DequeBack(DequeElement)(Deque(DequeElement)* deque) {
+static Option(DequeElement) DequeBack(DequeElement)(Deque(DequeElement) * deque) {
+  if (deque->count == 0) {
+    return OptionNone(DequeElement)();
+  }
+
   var back = (deque->front + deque->count - 1) % ArrayCapacity(DequeElement)(&deque->ring);
-  return ArrayAt(DequeElement)(&deque->ring, back);
+
+  return OptionSome(DequeElement)(ArrayAt(DequeElement)(&deque->ring, back));
 }
 
-static void DequeQueueFront(DequeElement)(Deque(DequeElement)* deque, DequeElement element) {
+static void DequeQueueFront(DequeElement)(Deque(DequeElement) * deque, DequeElement element) {
   if (deque->count == ArrayCapacity(DequeElement)(&deque->ring)) {
     ArrayResize(DequeElement)(&deque->ring, deque->count * 2 + 8);
   }
@@ -63,9 +73,15 @@ static void DequeQueueFront(DequeElement)(Deque(DequeElement)* deque, DequeEleme
   deque->front = (deque->front - 1 + ArrayCapacity(DequeElement)(&deque->ring)) % ArrayCapacity(DequeElement)(&deque->ring);
   ArraySetAt(DequeElement)(&deque->ring, deque->front, element);
   ++deque->count;
+
+  // print the ring
+  for (var i = 0; i < ArrayCapacity(DequeElement)(&deque->ring); ++i) {
+    printf("%3d ", ArrayAt(DequeElement)(&deque->ring, i));
+  }
+  printf("\n");
 }
 
-static void DequeQueueBack(DequeElement)(Deque(DequeElement)* deque, DequeElement element) {
+static void DequeQueueBack(DequeElement)(Deque(DequeElement) * deque, DequeElement element) {
   if (deque->count == ArrayCapacity(DequeElement)(&deque->ring)) {
     ArrayResize(DequeElement)(&deque->ring, deque->count * 2 + 8);
   }
@@ -73,30 +89,26 @@ static void DequeQueueBack(DequeElement)(Deque(DequeElement)* deque, DequeElemen
   var back = (deque->front + deque->count) % ArrayCapacity(DequeElement)(&deque->ring);
   ArraySetAt(DequeElement)(&deque->ring, back, element);
   ++deque->count;
+
+  for (var i = 0; i < ArrayCapacity(DequeElement)(&deque->ring); ++i) {
+    printf("%3d ", ArrayAt(DequeElement)(&deque->ring, i));
+  }
+  printf("\n");
 }
 
-static Option(DequeElement) DequeDequeueFront(DequeElement)(Deque(DequeElement)* deque) {
-  if (deque->count == 0) {
-    return OptionNone(DequeElement)();
-  }
+static Option(DequeElement) DequeDequeueFront(DequeElement)(Deque(DequeElement) * deque) {
+  var front = DequeFront(DequeElement)(deque);
 
-  var element = ArrayAt(DequeElement)(&deque->ring, deque->front);
   deque->front = (deque->front + 1) % ArrayCapacity(DequeElement)(&deque->ring);
   --deque->count;
 
-  return OptionSome(DequeElement)(element);
+  return front;
 }
 
-static Option(DequeElement) DequeDequeueBack(DequeElement)(Deque(DequeElement)* deque) {
-  if (deque->count == 0) {
-    return OptionNone(DequeElement)();
-  }
-
-  var back = (deque->front + deque->count - 1) % ArrayCapacity(DequeElement)(&deque->ring);
-  var element = ArrayAt(DequeElement)(&deque->ring, back);
+static Option(DequeElement) DequeDequeueBack(DequeElement)(Deque(DequeElement) * deque) {
+  var back = DequeBack(DequeElement)(deque);
   --deque->count;
-
-  return OptionSome(DequeElement)(element);
+  return back;
 }
 
 static void DequeDestroy(DequeElement)(Deque(DequeElement) deque) {
