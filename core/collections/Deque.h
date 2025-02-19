@@ -132,3 +132,5 @@ static Option(DequeElement) DequeDequeueBack(DequeElement)(Deque(DequeElement) *
 static void DequeDestroy(DequeElement)(Deque(DequeElement) deque) {
   ArrayDestroy(DequeElement)(deque.ring);
 }
+
+#undef DequeElement
