@@ -18,6 +18,7 @@
 #ifndef Deque
 #define Deque(DequeElement) GENERIC(Deque, DequeElement)
 #define DequeDefault(DequeElement) GENERIC(DequeDefault, DequeElement)
+#define DequeCount(DequeElement) GENERIC(DequeCount, DequeElement)
 #define DequeFront(DequeElement) GENERIC(DequeFront, DequeElement)
 #define DequeBack(DequeElement) GENERIC(DequeBack, DequeElement)
 #define DequeQueueFront(DequeElement) GENERIC(DequeQueueFront, DequeElement)
@@ -39,6 +40,10 @@ static Deque(DequeElement) DequeDefault(DequeElement)() {
     .front = 0,
     .count = 0,
   };
+}
+
+static UInt DequeCount(DequeElement)(Deque(DequeElement)* deque) {
+  return deque->count;
 }
 
 static DequeElement DequeFront(DequeElement)(Deque(DequeElement)* deque) {
