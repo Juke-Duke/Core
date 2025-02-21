@@ -1,11 +1,12 @@
 #pragma once
 
+#ifndef DISABLE_List_UInt8
 #define ListElement UInt8
 #include <core/collections/List.h>
+#endif
+#undef DISABLE_List_UInt8
 
-typedef struct {
-  List(UInt8) utf8;
-} String;
+typedef List(UInt8) String;
 
 String StringDefault();
 

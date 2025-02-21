@@ -1,23 +1,21 @@
 #include <core/String.h>
 
 String StringDefault() {
-  return (String){
-    .utf8 = ListDefault(UInt8)(),
-  };
+  return ListDefault(UInt8)();
 }
 
 String StringCreate(char const* cString) {
   var string = StringDefault();
 
   for (; *cString; ++cString) {
-    ListAppend(UInt8)(&string.utf8, *cString);
+    ListAppend(UInt8)(&string, *cString);
   }
 
   return string;
 }
 
 UInt StringCount(String const* string) {
-  return ListCount(UInt8)(&string->utf8);
+  return ListCount(UInt8)(string);
 }
 
 int RuneToUTF8(Rune rune, UInt8* utf8) {
@@ -52,7 +50,7 @@ void StringAppend(String* string, Rune rune) {
   var count = RuneToUTF8(rune, utf8);
 
   for (var i = 0; i < count; ++i) {
-    ListAppend(UInt8)(&string->utf8, utf8[i]);
+    ListAppend(UInt8)(string, utf8[i]);
   }
 }
 
@@ -60,12 +58,12 @@ Array(UInt8) StringToBytes(String const* string) {
   var bytes = ArrayCreateWithCapacity(UInt8)(StringCount(string));
 
   for (var i = 0; i < StringCount(string); ++i) {
-    ArraySetAt(UInt8)(&bytes, i, ListAt(UInt8)(&string->utf8, i));
+    ArraySetAt(UInt8)(&bytes, i, ListAt(UInt8)(string, i));
   }
 
   return bytes;
 }
 
 void StringDestroy(String string) {
-  ListDestroy(UInt8)(string.utf8);
+  ListDestroy(UInt8)(string);
 }
