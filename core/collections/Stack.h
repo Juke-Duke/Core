@@ -9,11 +9,13 @@
 #define ArrayElement StackElement
 #include <core/collections/Array.h>
 #endif
+#undef DISABLE_Array_StackElement
 
 #ifndef DISABLE_Option_StackElement
 #define OptionValue StackElement
 #include <core/Option.h>
 #endif
+#undef DISABLE_Option_StackElement
 
 #ifndef Stack
 #define Stack(StackElement) GENERIC(Stack, StackElement)

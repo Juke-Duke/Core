@@ -24,21 +24,25 @@
 #define TupleT1 DictionaryValue
 #include <core/Tuple.h>
 #endif
+#undef DISABLE_Tuple_DictionaryKey_DictionaryValue
 
 #ifndef DISABLE_Option_Tuple_DictionaryKey_DictionaryValue
 #define OptionValue Tuple(DictionaryKey, DictionaryValue)
 #include <core/Option.h>
 #endif
+#undef DISABLE_Option_Tuple_DictionaryKey_DictionaryValue
 
 #ifndef DISABLE_Option_DictionaryValue
 #define OptionValue DictionaryValue
 #include <core/Option.h>
 #endif
+#undef DISABLE_Option_DictionaryValue
 
 #ifndef DISABLE_List_Option_Tuple_DictionaryKey_DictionaryValue
 #define ListElement Option(Tuple(DictionaryKey, DictionaryValue))
 #include <core/collections/List.h>
 #endif
+#undef DISABLE_List_Option_Tuple_DictionaryKey_DictionaryValue
 
 #ifndef Dictionary
 #define Dictionary(Key, Value) GENERIC2(Dictionary, Key, Value)
@@ -107,6 +111,9 @@ static Option(DictionaryValue) DictionaryInsert(DictionaryKey, DictionaryValue)(
   if (entry.tag == Option_Some) {
     previousValue = OptionSome(DictionaryValue)(entry.value._1);
   }
+  else {
+    ++dictionary->count;
+  }
 
   ListSetAt(Option(Tuple(DictionaryKey, DictionaryValue)))(
     &dictionary->entries,
@@ -115,8 +122,6 @@ static Option(DictionaryValue) DictionaryInsert(DictionaryKey, DictionaryValue)(
       (Tuple(DictionaryKey, DictionaryValue)){._0 = key, ._1 = value}
     )
   );
-
-  ++dictionary->count;
 
   if (dictionary->count > ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries) / 2) {
     DictionaryRehash(DictionaryKey, DictionaryValue)(dictionary);
@@ -201,8 +206,3 @@ static void DictionaryDestroy(DictionaryKey, DictionaryValue)(Dictionary(Diction
 #undef DictionaryKeyHash
 #undef DictionaryKeyEqual
 #undef DictionaryValue
-
-#undef DISABLE_Tuple_DictionaryKey_DictionaryValue
-#undef DISABLE_Option_Tuple_DictionaryKey_DictionaryValue
-#undef DISABLE_Option_DictionaryValue
-#undef DISABLE_List_Option_Tuple_DictionaryKey_DictionaryValue

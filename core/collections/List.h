@@ -10,6 +10,7 @@
 #define ArrayElement ListElement
 #include <core/collections/Array.h>
 #endif
+#undef DISABLE_Array_ListElement
 
 #ifndef List
 #define List(ListElement) GENERIC(List, ListElement)
@@ -79,5 +80,3 @@ static void ListDestroy(ListElement)(List(ListElement) list) {
 }
 
 #undef ListElement
-
-#undef DISABLE_Array_ListElement

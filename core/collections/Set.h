@@ -13,12 +13,16 @@
 #endif
 
 #include <core/Core.h>
+#include <core/Generic.h>
 
+#ifndef DISABLE_Dectionary_SetElement_Unit
 #define DictionaryKey SetElement
 #define DictionaryKeyHash(key) SetElementHash(key)
 #define DictionaryKeyEqual(a, b) SetElementEqual(a, b)
 #define DictionaryValue Unit
 #include <core/collections/Dictionary.h>
+#endif
+#undef DISABLE_Dectionary_SetElement_Unit
 
 #ifndef Set
 #define Set(SetElement) GENERIC(Set, SetElement)

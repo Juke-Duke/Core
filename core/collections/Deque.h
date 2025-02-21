@@ -9,11 +9,13 @@
 #define ArrayElement DequeElement
 #include <core/collections/Array.h>
 #endif
+#undef DISABLE_Array_DequeElement
 
 #ifndef DISABLE_Option_DequeElement
 #define OptionValue DequeElement
 #include <core/Option.h>
 #endif
+#undef DISABLE_Option_DequeElement
 
 #ifndef Deque
 #define Deque(DequeElement) GENERIC(Deque, DequeElement)
