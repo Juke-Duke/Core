@@ -1,8 +1,8 @@
 #pragma once
 
-#define var __auto_type
+#define var auto
 
-#define null ((void*)0)
+#define null nullptr
 
 typedef struct {} Unit;
 

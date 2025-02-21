@@ -17,13 +17,13 @@ typedef enum {
 #endif
 
 typedef struct {
-  OptionValue value;
   OptionTag tag;
+  OptionValue value;
 } Option(OptionValue);
 
 static Option(OptionValue) OptionNone(OptionValue)() {
   return (Option(OptionValue)){
-    .value = (OptionValue){},
+    .value = {},
     .tag = Option_None,
   };
 }
