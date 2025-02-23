@@ -1,21 +1,21 @@
 #include <core/String.h>
 
 String StringDefault() {
-  return ListDefault(UInt8)();
+  return (String){
+    .bytes = ListDefault(UInt8)(),
+  };
 }
 
 String StringCreate(char const* cString) {
   var string = StringDefault();
 
-  for (; *cString; ++cString) {
-    ListAppend(UInt8)(&string, *cString);
-  }
+  StringAppendCString(&string, cString);
 
   return string;
 }
 
-UInt StringCount(String const* string) {
-  return ListCount(UInt8)(string);
+UInt StringCountBytes(String const* string) {
+  return ListCount(UInt8)(&string->bytes);
 }
 
 int RuneToUTF8(Rune rune, UInt8* utf8) {
@@ -46,24 +46,50 @@ int RuneToUTF8(Rune rune, UInt8* utf8) {
 }
 
 void StringAppend(String* string, Rune rune) {
-  var utf8 = (UInt8[4]){};
-  var count = RuneToUTF8(rune, utf8);
+  var bytes = (UInt8[4]){};
+  var count = RuneToUTF8(rune, bytes);
 
   for (var i = 0; i < count; ++i) {
-    ListAppend(UInt8)(string, utf8[i]);
+    ListAppend(UInt8)(&string->bytes, bytes[i]);
   }
 }
 
-Array(UInt8) StringToBytes(String const* string) {
-  var bytes = ArrayCreateWithCapacity(UInt8)(StringCount(string));
+void StringAppendCString(String* string, char const* cString) {
+  for (; *cString; ++cString) {
+    ListAppend(UInt8)(&string->bytes, *cString);
+  }
+}
 
-  for (var i = 0; i < StringCount(string); ++i) {
-    ArraySetAt(UInt8)(&bytes, i, ListAt(UInt8)(string, i));
+void StringAppendString(String* string, String const* other) {
+  for (var i = 0; i < StringCountBytes(other); ++i) {
+    ListAppend(UInt8)(&string->bytes, ListAt(UInt8)(&other->bytes, i));
+  }
+}
+
+Bool StringEqual(String const* a, String const* b) {
+  if (StringCountBytes(a) != StringCountBytes(b)) {
+    return false;
+  }
+
+  for (var i = 0; i < StringCountBytes(a); ++i) {
+    if (ListAt(UInt8)(&a->bytes, i) != ListAt(UInt8)(&b->bytes, i)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+Array(UInt8) StringToBytes(String const* string) {
+  var bytes = ArrayCreateWithCapacity(UInt8)(StringCountBytes(string));
+
+  for (var i = 0; i < StringCountBytes(string); ++i) {
+    ArraySetAt(UInt8)(&bytes, i, ListAt(UInt8)(&string->bytes, i));
   }
 
   return bytes;
 }
 
 void StringDestroy(String string) {
-  ListDestroy(UInt8)(string);
+  ListDestroy(UInt8)(string.bytes);
 }
