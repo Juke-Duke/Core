@@ -17,8 +17,8 @@
 
 #ifndef DISABLE_Dectionary_SetElement_Unit
 #define DictionaryKey SetElement
-#define DictionaryKeyHash(key) SetElementHash(key)
-#define DictionaryKeyEqual(a, b) SetElementEqual(a, b)
+#define DictionaryKeyHash SetElementHash
+#define DictionaryKeyEqual SetElementEqual
 #define DictionaryValue Unit
 #include <core/collections/Dictionary.h>
 #endif
