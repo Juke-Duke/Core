@@ -22,11 +22,6 @@
 #define ListSetAt(ListElement) GENERIC(ListSetAt, ListElement)
 #define ListAppend(ListElement) GENERIC(ListAppend, ListElement)
 #define ListDestroy(ListElement) GENERIC(ListDestroy, ListElement)
-
-#define ListCursor(ListElement) GENERIC(ListCursor, ListElement)
-#define ListCursorCreate(ListElement) GENERIC(ListCursorCreate, ListElement)
-#define ListCursorNext(ListElement) GENERIC(ListCursorNext, ListElement)
-#define ListCursorAsCursor(ListElement) GENERIC(ListCursorAsCursor, ListElement)
 #endif
 
 typedef struct {
