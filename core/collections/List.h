@@ -85,18 +85,18 @@ static void ListDestroy(ListElement)(List(ListElement) list) {
 }
 
 typedef struct {
-  List(ListElement)* list;
+  List(ListElement) * list;
   UInt index;
 } ListCursor(ListElement);
 
-static ListCursor(ListElement) ListCursorCreate(ListElement)(List(ListElement)* list) {
+static ListCursor(ListElement) ListCursorCreate(ListElement)(List(ListElement) * list) {
   return (ListCursor(ListElement)){
     .list = list,
     .index = 0,
   };
 }
 
-static Option(ListElement) ListCursorNext(ListElement)(ListCursor(ListElement)* listCursor) {
+static Option(ListElement) ListCursorNext(ListElement)(ListCursor(ListElement) * listCursor) {
   if (listCursor->index < ListCount(ListElement)(listCursor->list)) {
     return OptionSome(ListElement)(ListAt(ListElement)(listCursor->list, listCursor->index++));
   }
@@ -104,7 +104,7 @@ static Option(ListElement) ListCursorNext(ListElement)(ListCursor(ListElement)* 
   return OptionNone(ListElement)();
 }
 
-static Cursor(ListElement) ListCursor_as_Cursor(ListElement)(ListCursor(ListElement)* listCursor) {
+static Cursor(ListElement) ListCursor_as_Cursor(ListElement)(ListCursor(ListElement) * listCursor) {
   static typeof(*(Cursor(ListElement)){}.interface) interface = {
     .Next = (void*)ListCursorNext(ListElement),
   };
