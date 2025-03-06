@@ -12,6 +12,12 @@
 #endif
 #undef DISABLE_Array_ListElement
 
+#ifndef DISABLE_Cursor_ListElement
+#define CursorElement ListElement
+#include <core/collections/Cursor.h>
+#endif
+#undef DISABLE_Cursor_ListElement
+
 #ifndef List
 #define List(ListElement) GENERIC(List, ListElement)
 #define ListDefault(ListElement) GENERIC(ListDefault, ListElement)
@@ -22,6 +28,10 @@
 #define ListSetAt(ListElement) GENERIC(ListSetAt, ListElement)
 #define ListAppend(ListElement) GENERIC(ListAppend, ListElement)
 #define ListDestroy(ListElement) GENERIC(ListDestroy, ListElement)
+#define ListCursor(ListElement) GENERIC(ListCursor, ListElement)
+#define ListCursorCreate(ListElement) GENERIC(ListCursorCreate, ListElement)
+#define ListCursorNext(ListElement) GENERIC(ListCursorNext, ListElement)
+#define ListCursor_as_Cursor(ListElement) GENERIC(ListCursor_as_Cursor, ListElement)
 #endif
 
 typedef struct {
@@ -72,6 +82,37 @@ static void ListAppend(ListElement)(List(ListElement) * list, ListElement value)
 static void ListDestroy(ListElement)(List(ListElement) list) {
   ArrayDestroy(ListElement)(list.elements);
   list.count = 0;
+}
+
+typedef struct {
+  List(ListElement)* list;
+  UInt index;
+} ListCursor(ListElement);
+
+static ListCursor(ListElement) ListCursorCreate(ListElement)(List(ListElement)* list) {
+  return (ListCursor(ListElement)){
+    .list = list,
+    .index = 0,
+  };
+}
+
+static Option(ListElement) ListCursorNext(ListElement)(ListCursor(ListElement)* listCursor) {
+  if (listCursor->index < ListCount(ListElement)(listCursor->list)) {
+    return OptionSome(ListElement)(ListAt(ListElement)(listCursor->list, listCursor->index++));
+  }
+
+  return OptionNone(ListElement)();
+}
+
+static Cursor(ListElement) ListCursor_as_Cursor(ListElement)(ListCursor(ListElement)* listCursor) {
+  static typeof(*(Cursor(ListElement)){}.interface) interface = {
+    .Next = (void*)ListCursorNext(ListElement),
+  };
+
+  return (Cursor(ListElement)){
+    .self = listCursor,
+    .interface = &interface,
+  };
 }
 
 #undef ListElement

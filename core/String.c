@@ -18,7 +18,7 @@ UInt StringCountBytes(String const* string) {
   return ListCount(UInt8)(&string->bytes);
 }
 
-int RuneToUTF8(Rune rune, UInt8* utf8) {
+UInt RuneToUTF8(Rune rune, UInt8 utf8[4]) {
   if (rune <= 0x7F) {
     utf8[0] = rune;
     return 1;
@@ -80,16 +80,61 @@ Bool StringEqual(String const* a, String const* b) {
   return true;
 }
 
-Array(UInt8) StringToBytes(String const* string) {
-  var bytes = ArrayCreateWithCapacity(UInt8)(StringCountBytes(string));
-
-  for (var i = 0; i < StringCountBytes(string); ++i) {
-    ArraySetAt(UInt8)(&bytes, i, ListAt(UInt8)(&string->bytes, i));
-  }
-
-  return bytes;
+ListCursor(UInt8) StringBytesCursorCreate(String* string) {
+  return ListCursorCreate(UInt8)(&string->bytes);
 }
 
 void StringDestroy(String string) {
   ListDestroy(UInt8)(string.bytes);
+}
+
+StringCursor StringCursorCreate(String* string) {
+  return (StringCursor){
+    .string = string,
+    .index = 0,
+  };
+}
+
+Option(Rune) StringCursorNext(StringCursor* cursor) {
+  if (cursor->index == StringCountBytes(cursor->string)) {
+    return OptionNone(Rune)();
+  }
+
+  var rune = (Rune){};
+
+  if ((ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x80) == 0) {
+    rune = ListAt(UInt8)(&cursor->string->bytes, cursor->index);
+    cursor->index += 1;
+  }
+  else if ((ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0xE0) == 0xC0) {
+    rune = (ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x1F) << 6;
+    rune |= ListAt(UInt8)(&cursor->string->bytes, cursor->index + 1) & 0x3F;
+    cursor->index += 2;
+  }
+  else if ((ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0xF0) == 0xE0) {
+    rune = (ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x0F) << 12;
+    rune |= (ListAt(UInt8)(&cursor->string->bytes, cursor->index + 1) & 0x3F) << 6;
+    rune |= ListAt(UInt8)(&cursor->string->bytes, cursor->index + 2) & 0x3F;
+    cursor->index += 3;
+  }
+  else if ((ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0xF8) == 0xF0) {
+    rune = (ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x07) << 18;
+    rune |= (ListAt(UInt8)(&cursor->string->bytes, cursor->index + 1) & 0x3F) << 12;
+    rune |= (ListAt(UInt8)(&cursor->string->bytes, cursor->index + 2) & 0x3F) << 6;
+    rune |= ListAt(UInt8)(&cursor->string->bytes, cursor->index + 3) & 0x3F;
+    cursor->index += 4;
+  }
+
+  return OptionSome(Rune)(rune);
+}
+
+Cursor(Rune) StringCursor_as_Cursor(StringCursor* cursor) {
+  static typeof(*(Cursor(Rune)){}.interface) interface = {
+    .Next = (void*)StringCursorNext,
+  };
+
+  return (Cursor(Rune)){
+    .self = cursor,
+    .interface = &interface,
+  };
 }
