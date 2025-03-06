@@ -59,7 +59,6 @@
 
 #ifndef Tuple
 #define Tuple(TupleT0, TupleT1) GENERIC2(Tuple, TupleT0, TupleT1)
-#define Tuple2(TupleT0, TupleT1) GENERIC2(Tuple, TupleT0, TupleT1)
 #define Tuple3(TupleT0, TupleT1, TupleT2) GENERIC3(Tuple, TupleT0, TupleT1, TupleT2)
 #define Tuple4(TupleT0, TupleT1, TupleT2, TupleT3) GENERIC4(Tuple, TupleT0, TupleT1, TupleT2, TupleT3)
 #define Tuple5(TupleT0, TupleT1, TupleT2, TupleT3, TupleT4) GENERIC5(Tuple, TupleT0, TupleT1, TupleT2, TupleT3, TupleT4)
