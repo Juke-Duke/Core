@@ -41,7 +41,7 @@ typedef struct {
   UInt index;
 } StringCursor;
 
-StringCursor StringCursorCreate(String* string);
+StringCursor StringCursorCreate(String const* string);
 
 Option(Rune) StringCursorNext(StringCursor* cursor);
 

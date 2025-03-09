@@ -98,7 +98,7 @@ void StringDestroy(String string) {
   ListDestroy(UInt8)(string.bytes);
 }
 
-StringCursor StringCursorCreate(String* string) {
+StringCursor StringCursorCreate(String const* string) {
   return (StringCursor){
     .string = string,
     .index = 0,
