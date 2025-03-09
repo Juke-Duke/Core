@@ -89,7 +89,7 @@ typedef struct {
   UInt index;
 } ListCursor(ListElement);
 
-static ListCursor(ListElement) ListCursorCreate(ListElement)(List(ListElement) * list) {
+static ListCursor(ListElement) ListCursorCreate(ListElement)(List(ListElement) const* list) {
   return (ListCursor(ListElement)){
     .list = list,
     .index = 0,
