@@ -30,12 +30,14 @@ void StringAppendString(String* string, String const* other);
 
 Bool StringEqual(String const* a, String const* b);
 
+UInt StringHash(String const* string);
+
 ListCursor(UInt8) StringBytesCursorCreate(String* string);
 
 void StringDestroy(String string);
 
 typedef struct {
-  String* string;
+  String const* string;
   UInt index;
 } StringCursor;
 

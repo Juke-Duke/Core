@@ -80,6 +80,16 @@ Bool StringEqual(String const* a, String const* b) {
   return true;
 }
 
+UInt StringHash(String const* string) {
+  var hash = (UInt)5381;
+
+  for (var i = 0; i < StringCountBytes(string); ++i) {
+    hash = hash * 33 ^ ListAt(UInt8)(&string->bytes, i);
+  }
+
+  return hash;
+}
+
 ListCursor(UInt8) StringBytesCursorCreate(String* string) {
   return ListCursorCreate(UInt8)(&string->bytes);
 }

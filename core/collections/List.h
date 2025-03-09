@@ -85,7 +85,7 @@ static void ListDestroy(ListElement)(List(ListElement) list) {
 }
 
 typedef struct {
-  List(ListElement) * list;
+  List(ListElement) const* list;
   UInt index;
 } ListCursor(ListElement);
 
