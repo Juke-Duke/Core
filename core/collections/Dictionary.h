@@ -78,11 +78,11 @@ static UInt DictionaryFindPosition(DictionaryKey, DictionaryValue)(
   DictionaryKey key
 ) {
   var offset = (UInt)1;
-  var position = DictionaryKeyHash(key) % ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(entries);
+  var position = DictionaryKeyHash(&key) % ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(entries);
 
   for (
     var entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(entries, position);
-    entry.tag == Option_Some && !DictionaryKeyEqual(entry.value._0, key);
+    entry.tag == Option_Some && !DictionaryKeyEqual(&key, &entry.value._0);
     entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(entries, position)
   ) {
     position += offset;

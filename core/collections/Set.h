@@ -31,7 +31,6 @@
 #define SetInsert(SetElement) GENERIC(SetInsert, SetElement)
 #define SetContains(SetElement) GENERIC(SetContains, SetElement)
 #define SetRemove(SetElement) GENERIC(SetRemove, SetElement)
-#define SetIsDisjoint(SetElement) GENERIC(SetIsDisjoint, SetElement)
 #define SetDestroy(SetElement) GENERIC(SetDestroy, SetElement)
 #endif
 
