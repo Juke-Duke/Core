@@ -90,7 +90,7 @@ UInt StringHash(String const* string) {
   return hash;
 }
 
-ListCursor(UInt8) StringBytesCursorCreate(String* string) {
+ListCursor(UInt8) StringBytesCursorCreate(String const* string) {
   return ListCursorCreate(UInt8)(&string->bytes);
 }
 
