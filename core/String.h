@@ -45,4 +45,6 @@ StringCursor StringCursorCreate(String const* string);
 
 Option(Rune) StringCursorNext(StringCursor* cursor);
 
+Option(Rune) StringCursorPeek(StringCursor* cursor);
+
 Cursor(Rune) StringCursor_as_Cursor(StringCursor* cursor);

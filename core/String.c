@@ -138,6 +138,35 @@ Option(Rune) StringCursorNext(StringCursor* cursor) {
   return OptionSome(Rune)(rune);
 }
 
+Option(Rune) StringCursorPeek(StringCursor* cursor) {
+  if (cursor->index == StringCountBytes(cursor->string)) {
+    return OptionNone(Rune)();
+  }
+
+  var rune = (Rune){};
+
+  if ((ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x80) == 0) {
+    rune = ListAt(UInt8)(&cursor->string->bytes, cursor->index);
+  }
+  else if ((ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0xE0) == 0xC0) {
+    rune = (ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x1F) << 6;
+    rune |= ListAt(UInt8)(&cursor->string->bytes, cursor->index + 1) & 0x3F;
+  }
+  else if ((ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0xF0) == 0xE0) {
+    rune = (ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x0F) << 12;
+    rune |= (ListAt(UInt8)(&cursor->string->bytes, cursor->index + 1) & 0x3F) << 6;
+    rune |= ListAt(UInt8)(&cursor->string->bytes, cursor->index + 2) & 0x3F;
+  }
+  else if ((ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0xF8) == 0xF0) {
+    rune = (ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x07) << 18;
+    rune |= (ListAt(UInt8)(&cursor->string->bytes, cursor->index + 1) & 0x3F) << 12;
+    rune |= (ListAt(UInt8)(&cursor->string->bytes, cursor->index + 2) & 0x3F) << 6;
+    rune |= ListAt(UInt8)(&cursor->string->bytes, cursor->index + 3) & 0x3F;
+  }
+
+  return OptionSome(Rune)(rune);
+}
+
 Cursor(Rune) StringCursor_as_Cursor(StringCursor* cursor) {
   static typeof(*(Cursor(Rune)){}.interface) interface = {
     .Next = (void*)StringCursorNext,
