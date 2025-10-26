@@ -11,8 +11,8 @@ typedef enum {
 } OptionTag;
 
 #define Option(OptionValue) GENERIC(Option, OptionValue)
-#define OptionNone(OptionValue) GENERIC(None, OptionValue)
-#define OptionSome(OptionValue) GENERIC(Some, OptionValue)
+#define OptionNone(OptionValue) GENERIC(OptionNone, OptionValue)
+#define OptionSome(OptionValue) GENERIC(OptionSome, OptionValue)
 #endif
 
 typedef struct {

@@ -110,3 +110,13 @@ Tuple7(TupleT0, TupleT1, TupleT2, TupleT3, TupleT4, TupleT5, TupleT6);
 #elif TupleArgs == 8
 Tuple8(TupleT0, TupleT1, TupleT2, TupleT3, TupleT4, TupleT5, TupleT6, TupleT7);
 #endif
+
+#undef TupleArgs
+#undef TupleT0
+#undef TupleT1
+#undef TupleT2
+#undef TupleT3
+#undef TupleT4
+#undef TupleT5
+#undef TupleT6
+#undef TupleT7
