@@ -87,7 +87,7 @@ Array(UInt8) StringToBytes(String const* string) {
     ArraySetAt(UInt8)(&bytes, i, ListAt(UInt8)(&string->bytes, i));
   }
 
-  return hash;
+  return bytes;
 }
 
 ListCursor(UInt8) StringBytesCursorCreate(String const* string) {
@@ -110,7 +110,7 @@ Option(Rune) StringCursorNext(StringCursor* cursor) {
     return OptionNone(Rune)();
   }
 
-  var rune = (Rune){};
+  auto rune = (Rune){};
 
   if ((ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x80) == 0) {
     rune = ListAt(UInt8)(&cursor->string->bytes, cursor->index);
@@ -143,7 +143,7 @@ Option(Rune) StringCursorPeek(StringCursor* cursor) {
     return OptionNone(Rune)();
   }
 
-  var rune = (Rune){};
+  auto rune = (Rune){};
 
   if ((ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x80) == 0) {
     rune = ListAt(UInt8)(&cursor->string->bytes, cursor->index);
