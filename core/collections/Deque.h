@@ -50,11 +50,11 @@ static UInt DequeCount(DequeElement)(Deque(DequeElement) * deque) {
 }
 
 static void DequeResize(DequeElement)(Deque(DequeElement) * deque) {
-  var oldRing = deque->ring;
+  auto oldRing = deque->ring;
 
   deque->ring = ArrayCreateWithCapacity(DequeElement)(ArrayCapacity(DequeElement)(&oldRing) * 2 + 8);
 
-  for (var i = 0; i < deque->count; ++i) {
+  for (auto i = 0; i < deque->count; ++i) {
     ArraySetAt(DequeElement)(
       &deque->ring,
       i,
@@ -102,7 +102,7 @@ static void DequeQueueBack(DequeElement)(Deque(DequeElement) * deque, DequeEleme
     DequeResize(DequeElement)(deque);
   }
 
-  var back = (deque->front + deque->count) % ArrayCapacity(DequeElement)(&deque->ring);
+  auto back = (deque->front + deque->count) % ArrayCapacity(DequeElement)(&deque->ring);
   ArraySetAt(DequeElement)(&deque->ring, back, element);
   ++deque->count;
 }
@@ -112,7 +112,7 @@ static Option(DequeElement) DequeDequeueFront(DequeElement)(Deque(DequeElement) 
     return OptionNone(DequeElement)();
   }
 
-  var element = ArrayAt(DequeElement)(&deque->ring, deque->front);
+  auto element = ArrayAt(DequeElement)(&deque->ring, deque->front);
   deque->front = (deque->front + 1) % ArrayCapacity(DequeElement)(&deque->ring);
   --deque->count;
 
@@ -124,8 +124,8 @@ static Option(DequeElement) DequeDequeueBack(DequeElement)(Deque(DequeElement) *
     return OptionNone(DequeElement)();
   }
 
-  var back = (deque->front + deque->count - 1) % ArrayCapacity(DequeElement)(&deque->ring);
-  var element = ArrayAt(DequeElement)(&deque->ring, back);
+  auto back = (deque->front + deque->count - 1) % ArrayCapacity(DequeElement)(&deque->ring);
+  auto element = ArrayAt(DequeElement)(&deque->ring, back);
   --deque->count;
 
   return OptionSome(DequeElement)(element);

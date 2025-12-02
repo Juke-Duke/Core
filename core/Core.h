@@ -1,10 +1,9 @@
 #pragma once
 
-#define var auto
-
 #define null nullptr
 
-typedef struct {} Unit;
+typedef struct {
+} Unit;
 
 typedef bool Bool;
 

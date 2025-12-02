@@ -57,7 +57,7 @@ static Option(StackElement) StackPop(StackElement)(Stack(StackElement) * stack) 
     return OptionNone(StackElement)();
   }
 
-  var element = ArrayAt(StackElement)(&stack->elements, stack->count - 1);
+  auto element = ArrayAt(StackElement)(&stack->elements, stack->count - 1);
   --stack->count;
 
   return OptionSome(StackElement)(element);

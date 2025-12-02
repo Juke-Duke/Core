@@ -7,7 +7,7 @@ String StringDefault() {
 }
 
 String StringCreate(char const* cString) {
-  var string = StringDefault();
+  auto string = StringDefault();
 
   StringAppendCString(&string, cString);
 
@@ -46,10 +46,10 @@ UInt RuneToUTF8(Rune rune, UInt8 utf8[4]) {
 }
 
 void StringAppend(String* string, Rune rune) {
-  var bytes = (UInt8[4]){};
-  var count = RuneToUTF8(rune, bytes);
+  auto bytes = (UInt8[4]){};
+  auto count = RuneToUTF8(rune, bytes);
 
-  for (var i = 0; i < count; ++i) {
+  for (auto i = 0; i < count; ++i) {
     ListAppend(UInt8)(&string->bytes, bytes[i]);
   }
 }
@@ -61,7 +61,7 @@ void StringAppendCString(String* string, char const* cString) {
 }
 
 void StringAppendString(String* string, String const* other) {
-  for (var i = 0; i < StringCountBytes(other); ++i) {
+  for (auto i = 0; i < StringCountBytes(other); ++i) {
     ListAppend(UInt8)(&string->bytes, ListAt(UInt8)(&other->bytes, i));
   }
 }
@@ -71,7 +71,7 @@ Bool StringEqual(String const* a, String const* b) {
     return false;
   }
 
-  for (var i = 0; i < StringCountBytes(a); ++i) {
+  for (auto i = 0; i < StringCountBytes(a); ++i) {
     if (ListAt(UInt8)(&a->bytes, i) != ListAt(UInt8)(&b->bytes, i)) {
       return false;
     }
@@ -80,11 +80,11 @@ Bool StringEqual(String const* a, String const* b) {
   return true;
 }
 
-UInt StringHash(String const* string) {
-  var hash = (UInt)5381;
+Array(UInt8) StringToBytes(String const* string) {
+  auto bytes = ArrayCreateWithCapacity(UInt8)(StringCountBytes(string));
 
-  for (var i = 0; i < StringCountBytes(string); ++i) {
-    hash = hash * 33 ^ ListAt(UInt8)(&string->bytes, i);
+  for (auto i = 0; i < StringCountBytes(string); ++i) {
+    ArraySetAt(UInt8)(&bytes, i, ListAt(UInt8)(&string->bytes, i));
   }
 
   return hash;

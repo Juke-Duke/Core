@@ -77,12 +77,12 @@ static UInt DictionaryFindPosition(DictionaryKey, DictionaryValue)(
   List(Option(Tuple(DictionaryKey, DictionaryValue))) const* entries,
   DictionaryKey key
 ) {
-  var offset = (UInt)1;
-  var position = DictionaryKeyHash(&key) % ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(entries);
+  auto offset = (UInt)1;
+  auto position = DictionaryKeyHash(key) % ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(entries);
 
   for (
-    var entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(entries, position);
-    entry.tag == Option_Some && !DictionaryKeyEqual(&key, &entry.value._0);
+    auto entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(entries, position);
+    entry.tag == Option_Some && !DictionaryKeyEqual(entry.value._0, key);
     entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(entries, position)
   ) {
     position += offset;
@@ -103,11 +103,11 @@ static Option(DictionaryValue) DictionaryInsert(DictionaryKey, DictionaryValue)(
   DictionaryKey key,
   DictionaryValue value
 ) {
-  var position = DictionaryFindPosition(DictionaryKey, DictionaryValue)(&dictionary->entries, key);
+  auto position = DictionaryFindPosition(DictionaryKey, DictionaryValue)(&dictionary->entries, key);
 
-  var previousValue = OptionNone(DictionaryValue)();
+  auto previousValue = OptionNone(DictionaryValue)();
 
-  var entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
+  auto entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
   if (entry.tag == Option_Some) {
     previousValue = OptionSome(DictionaryValue)(entry.value._1);
   }
@@ -136,13 +136,13 @@ static Option(DictionaryValue) DictionaryAt(DictionaryKey, DictionaryValue)(
 );
 
 static void DictionaryRehash(DictionaryKey, DictionaryValue)(Dictionary(DictionaryKey, DictionaryValue) * dictionary) {
-  var oldEntries = dictionary->entries;
+  auto oldEntries = dictionary->entries;
 
   dictionary->entries = ListCreate(Option(Tuple(DictionaryKey, DictionaryValue)))(
     NextPrime(ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries) * 2)
   );
 
-  for (var i = 0; i < ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries); ++i) {
+  for (auto i = 0; i < ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries); ++i) {
     ListSetAt(Option(Tuple(DictionaryKey, DictionaryValue)))(
       &dictionary->entries,
       i,
@@ -150,9 +150,9 @@ static void DictionaryRehash(DictionaryKey, DictionaryValue)(Dictionary(Dictiona
     );
   }
 
-  for (var i = 0; i < ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&oldEntries); ++i) {
+  for (auto i = 0; i < ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&oldEntries); ++i) {
     if (ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&oldEntries, i).tag == Option_Some) {
-      var entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&oldEntries, i).value;
+      auto entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&oldEntries, i).value;
       DictionaryInsert(DictionaryKey, DictionaryValue)(dictionary, entry._0, entry._1);
     }
   }
@@ -164,7 +164,7 @@ static Bool DictionaryContainsKey(DictionaryKey, DictionaryValue)(
   Dictionary(DictionaryKey, DictionaryValue) const* dictionary,
   DictionaryKey key
 ) {
-  var position = DictionaryFindPosition(DictionaryKey, DictionaryValue)(&dictionary->entries, key);
+  auto position = DictionaryFindPosition(DictionaryKey, DictionaryValue)(&dictionary->entries, key);
   return ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position).tag == Option_Some;
 }
 
@@ -172,8 +172,8 @@ static Option(DictionaryValue) DictionaryAt(DictionaryKey, DictionaryValue)(
   Dictionary(DictionaryKey, DictionaryValue) const* dictionary,
   DictionaryKey key
 ) {
-  var position = DictionaryFindPosition(DictionaryKey, DictionaryValue)(&dictionary->entries, key);
-  var entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
+  auto position = DictionaryFindPosition(DictionaryKey, DictionaryValue)(&dictionary->entries, key);
+  auto entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
   return entry.tag == Option_Some ? OptionSome(DictionaryValue)(entry.value._1) : OptionNone(DictionaryValue)();
 }
 
@@ -181,8 +181,8 @@ static Option(Tuple(DictionaryKey, DictionaryValue)) DictionaryRemove(Dictionary
   Dictionary(DictionaryKey, DictionaryValue) * dictionary,
   DictionaryKey key
 ) {
-  var position = DictionaryFindPosition(DictionaryKey, DictionaryValue)(&dictionary->entries, key);
-  var entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
+  auto position = DictionaryFindPosition(DictionaryKey, DictionaryValue)(&dictionary->entries, key);
+  auto entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
 
   if (entry.tag == Option_Some) {
     ListSetAt(Option(Tuple(DictionaryKey, DictionaryValue)))(

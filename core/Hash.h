@@ -13,7 +13,7 @@ static Bool IsPrime(UInt num) {
     return false;
   }
 
-  for (var divisor = (UInt)3; divisor * divisor <= num; divisor += 2) {
+  for (auto divisor = 3UL; divisor * divisor <= num; divisor += 2) {
     if (num % divisor == 0) {
       return false;
     }
