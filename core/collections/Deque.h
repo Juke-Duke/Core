@@ -39,7 +39,7 @@ typedef struct {
 
 static Deque(DequeElement) DequeDefault(DequeElement)() {
   return (Deque(DequeElement)){
-    .ring = ArrayDefault(DequeElement)(),
+    .ring  = ArrayDefault(DequeElement)(),
     .front = 0,
     .count = 0,
   };
@@ -124,7 +124,7 @@ static Option(DequeElement) DequeDequeueBack(DequeElement)(Deque(DequeElement) *
     return OptionNone(DequeElement)();
   }
 
-  auto back = (deque->front + deque->count - 1) % ArrayCapacity(DequeElement)(&deque->ring);
+  auto back    = (deque->front + deque->count - 1) % ArrayCapacity(DequeElement)(&deque->ring);
   auto element = ArrayAt(DequeElement)(&deque->ring, back);
   --deque->count;
 

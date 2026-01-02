@@ -65,7 +65,7 @@ typedef struct {
 static Dictionary(DictionaryKey, DictionaryValue) DictionaryDefault(DictionaryKey, DictionaryValue)() {
   return (Dictionary(DictionaryKey, DictionaryValue)){
     .entries = ListCreate(Option(Tuple(DictionaryKey, DictionaryValue)))(11),
-    .count = 0,
+    .count   = 0,
   };
 }
 
@@ -77,7 +77,7 @@ static UInt DictionaryFindPosition(DictionaryKey, DictionaryValue)(
   List(Option(Tuple(DictionaryKey, DictionaryValue))) const* entries,
   DictionaryKey key
 ) {
-  auto offset = (UInt)1;
+  auto offset   = (UInt)1;
   auto position = DictionaryKeyHash(key) % ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(entries);
 
   for (
@@ -173,7 +173,7 @@ static Option(DictionaryValue) DictionaryAt(DictionaryKey, DictionaryValue)(
   DictionaryKey key
 ) {
   auto position = DictionaryFindPosition(DictionaryKey, DictionaryValue)(&dictionary->entries, key);
-  auto entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
+  auto entry    = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
   return entry.tag == Option_Some ? OptionSome(DictionaryValue)(entry.value._1) : OptionNone(DictionaryValue)();
 }
 
@@ -182,7 +182,7 @@ static Option(Tuple(DictionaryKey, DictionaryValue)) DictionaryRemove(Dictionary
   DictionaryKey key
 ) {
   auto position = DictionaryFindPosition(DictionaryKey, DictionaryValue)(&dictionary->entries, key);
-  auto entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
+  auto entry    = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
 
   if (entry.tag == Option_Some) {
     ListSetAt(Option(Tuple(DictionaryKey, DictionaryValue)))(

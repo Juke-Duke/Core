@@ -35,7 +35,7 @@ typedef struct {
 static Stack(StackElement) StackDefault(StackElement)() {
   return (Stack(StackElement)){
     .elements = ArrayDefault(StackElement)(),
-    .count = 0,
+    .count    = 0,
   };
 }
 

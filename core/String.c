@@ -101,7 +101,7 @@ void StringDestroy(String string) {
 StringCursor StringCursorCreate(String const* string) {
   return (StringCursor){
     .string = string,
-    .index = 0,
+    .index  = 0,
   };
 }
 
@@ -167,13 +167,8 @@ Option(Rune) StringCursorPeek(StringCursor* cursor) {
   return OptionSome(Rune)(rune);
 }
 
-Cursor(Rune) StringCursor_as_Cursor(StringCursor* cursor) {
-  static typeof(*(Cursor(Rune)){}.interface) interface = {
-    .Next = (void*)StringCursorNext,
-  };
-
-  return (Cursor(Rune)){
-    .self = cursor,
-    .interface = &interface,
-  };
-}
+implement(
+  Cursor(StringCursor),
+  StringCursor,
+  .Next = (void*)StringCursorNext,
+);

@@ -42,14 +42,14 @@ typedef struct {
 static List(ListElement) ListDefault(ListElement)() {
   return (List(ListElement)){
     .elements = ArrayDefault(ListElement)(),
-    .count = 0,
+    .count    = 0,
   };
 }
 
 static List(ListElement) ListCreate(ListElement)(UInt capacity) {
   return (List(ListElement)){
     .elements = ArrayCreateWithCapacity(ListElement)(capacity),
-    .count = 0,
+    .count    = 0,
   };
 }
 
@@ -91,7 +91,7 @@ typedef struct {
 
 static ListCursor(ListElement) ListCursorCreate(ListElement)(List(ListElement) const* list) {
   return (ListCursor(ListElement)){
-    .list = list,
+    .list  = list,
     .index = 0,
   };
 }
@@ -104,15 +104,10 @@ static Option(ListElement) ListCursorNext(ListElement)(ListCursor(ListElement) *
   return OptionNone(ListElement)();
 }
 
-static Cursor(ListElement) ListCursor_as_Cursor(ListElement)(ListCursor(ListElement) * listCursor) {
-  static typeof(*(Cursor(ListElement)){}.interface) interface = {
-    .Next = (void*)ListCursorNext(ListElement),
-  };
-
-  return (Cursor(ListElement)){
-    .self = listCursor,
-    .interface = &interface,
-  };
-}
+implement(
+  Cursor(ListElement),
+  ListCursor(ListElement),
+  .Next = (void*)ListCursorNext(ListElement),
+);
 
 #undef ListElement

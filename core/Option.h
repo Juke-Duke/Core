@@ -22,14 +22,14 @@ typedef struct {
 
 static Option(OptionValue) OptionNone(OptionValue)() {
   return (Option(OptionValue)){
-    .tag = Option_None,
+    .tag   = Option_None,
     .value = {},
   };
 }
 
 static Option(OptionValue) OptionSome(OptionValue)(OptionValue value) {
   return (Option(OptionValue)){
-    .tag = Option_Some,
+    .tag   = Option_Some,
     .value = value,
   };
 }
