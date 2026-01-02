@@ -4,6 +4,7 @@
 
 #include <core/Core.h>
 #include <core/Generic.h>
+#include <core/Interface.h>
 
 #ifndef DISABLE_Option_CursorElement
 #define OptionValue CursorElement
@@ -16,15 +17,12 @@
 #define CursorNext(CursorElement) GENERIC(CursorNext, CursorElement)
 #endif
 
-typedef struct {
-  void* self;
-  struct {
-    Option(CursorElement) (*Next)(void*);
-  }* interface;
-} Cursor(CursorElement);
+typedef interface(Cursor(CursorElement),
+  Option(CursorElement) (*Next)(void*);
+);
 
-static inline Option(CursorElement) CursorNext(CursorElement)(Cursor(CursorElement) cursor) {
-  return cursor.interface->Next(cursor.self);
+static Option(CursorElement) CursorNext(CursorElement)(Cursor(CursorElement)* cursor) {
+  return cursor->interface->Next(cursor->self);
 }
 
 #undef CursorElement
