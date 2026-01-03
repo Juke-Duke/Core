@@ -10,7 +10,9 @@
     UInt8 self[];            \
   } name
 
-#define implement(interfaceName, typeName, ...)                            \
+#define implement(...) implement_i(__VA_ARGS__)
+
+#define implement_i(interfaceName, typeName, ...)                          \
   interfaceName* typeName##_as_##interfaceName(typeName self) {            \
     static typeof(*(interfaceName){}.interface) interface = {__VA_ARGS__}; \
     auto obj = (interfaceName*)malloc(sizeof(void*) + sizeof(typeName));   \

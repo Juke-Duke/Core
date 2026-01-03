@@ -168,7 +168,7 @@ Option(Rune) StringCursorPeek(StringCursor* cursor) {
 }
 
 implement(
-  Cursor(StringCursor),
+  Cursor(Rune),
   StringCursor,
   .Next = (void*)StringCursorNext,
 );
