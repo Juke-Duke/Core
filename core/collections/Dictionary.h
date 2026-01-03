@@ -44,6 +44,13 @@
 #endif
 #undef DISABLE_List_Option_Tuple_DictionaryKey_DictionaryValue
 
+#ifndef DISABLE_Cursor_Tuple_DictionaryKey_DictionaryValue
+#define DISABLE_Option_CursorElement
+#define CursorElement Tuple(DictionaryKey, DictionaryValue)
+#include <core/collections/Cursor.h>
+#endif
+#undef DISABLE_Cursor_Tuple_DictionaryKey_DictionaryValue
+
 #ifndef Dictionary
 #define Dictionary(Key, Value) GENERIC2(Dictionary, Key, Value)
 #define DictionaryDefault(Key, Value) GENERIC2(DictionaryDefault, Key, Value)
@@ -55,6 +62,9 @@
 #define DictionaryAt(Key, Value) GENERIC2(DictionaryAt, Key, Value)
 #define DictionaryRemove(Key, Value) GENERIC2(DictionaryRemoveAt, Key, Value)
 #define DictionaryDestroy(Key, Value) GENERIC2(DictionaryDestroy, Key, Value)
+#define DictionaryCursor(Key, Value) GENERIC2(DictionaryCursor, Key, Value)
+#define DictionaryCursorCreate(Key, Value) GENERIC2(DictionaryCursorCreate, Key, Value)
+#define DictionaryCursorNext(Key, Value) GENERIC2(DictionaryCursorNext, Key, Value)
 #endif
 
 typedef struct {
@@ -201,6 +211,43 @@ static void DictionaryDestroy(DictionaryKey, DictionaryValue)(Dictionary(Diction
   ListDestroy(Option(Tuple(DictionaryKey, DictionaryValue)))(dictionary.entries);
   dictionary.count = 0;
 }
+
+typedef struct {
+  Dictionary(DictionaryKey, DictionaryValue) const* dictionary;
+  UInt index;
+} DictionaryCursor(DictionaryKey, DictionaryValue);
+
+static DictionaryCursor(DictionaryKey, DictionaryValue) DictionaryCursorCreate(DictionaryKey, DictionaryValue)(
+  Dictionary(DictionaryKey, DictionaryValue) const* dictionary
+) {
+  return (DictionaryCursor(DictionaryKey, DictionaryValue)){
+    .dictionary = dictionary,
+    .index      = 0,
+  };
+}
+
+static Option(Tuple(DictionaryKey, DictionaryValue)) DictionaryCursorNext(DictionaryKey, DictionaryValue)(
+  DictionaryCursor(DictionaryKey, DictionaryValue) * dictionaryCursor
+) {
+  while (dictionaryCursor->index < ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionaryCursor->dictionary->entries)) {
+    auto entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(
+      &dictionaryCursor->dictionary->entries,
+      dictionaryCursor->index++
+    );
+
+    if (entry.tag == Option_Some) {
+      return OptionSome(Tuple(DictionaryKey, DictionaryValue))(entry.value);
+    }
+  }
+
+  return OptionNone(Tuple(DictionaryKey, DictionaryValue))();
+}
+
+implement(
+  Cursor(Tuple(DictionaryKey, DictionaryValue)),
+  DictionaryCursor(DictionaryKey, DictionaryValue),
+  .Next = (void*)DictionaryCursorNext(DictionaryKey, DictionaryValue),
+);
 
 #undef DictionaryKey
 #undef DictionaryKeyHash

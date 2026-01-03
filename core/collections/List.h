@@ -31,7 +31,6 @@
 #define ListCursor(ListElement) GENERIC(ListCursor, ListElement)
 #define ListCursorCreate(ListElement) GENERIC(ListCursorCreate, ListElement)
 #define ListCursorNext(ListElement) GENERIC(ListCursorNext, ListElement)
-#define ListCursor_as_Cursor(ListElement) GENERIC(ListCursor_as_Cursor, ListElement)
 #endif
 
 typedef struct {

@@ -3,12 +3,12 @@
 #endif
 
 #ifndef SetElementHash
-#error Function 'SetElementHash' is not defined.
+#error Function 'UInt32 SetElementHash(SetElement value)' is not defined.
 #define SetElementHash(key)
 #endif
 
 #ifndef SetElementEqual
-#error Function 'SetElementEqual' is not defined.
+#error Function 'Bool SetElementEqual(SetElement left, SetElement right)' is not defined.
 #define SetElementEqual(a, b)
 #endif
 
@@ -24,6 +24,18 @@
 #endif
 #undef DISABLE_Dectionary_SetElement_Unit
 
+#ifndef DISABLE_Option_SetElement
+#define OptionValue SetElement
+#include <core/Option.h>
+#endif
+#undef DISABLE_Option_SetElement
+
+#ifndef DISABLE_Cursor_SetElement
+#define CursorElement SetElement
+#include <core/collections/Cursor.h>
+#endif
+#undef DISABLE_Cursor_SetElement
+
 #ifndef Set
 #define Set(SetElement) GENERIC(Set, SetElement)
 #define SetDefault(SetElement) GENERIC(SetDefault, SetElement)
@@ -32,6 +44,9 @@
 #define SetContains(SetElement) GENERIC(SetContains, SetElement)
 #define SetRemove(SetElement) GENERIC(SetRemove, SetElement)
 #define SetDestroy(SetElement) GENERIC(SetDestroy, SetElement)
+#define SetCursor(SetElement) GENERIC(SetCursor, SetElement)
+#define SetCursorCreate(SetElement) GENERIC(SetCursorCreate, SetElement)
+#define SetCursorNext(SetElement) GENERIC(SetCursorNext, SetElement)
 #endif
 
 typedef Dictionary(SetElement, Unit) Set(SetElement);
@@ -59,6 +74,25 @@ static Bool SetRemove(SetElement)(Set(SetElement) * set, SetElement element) {
 static void SetDestroy(SetElement)(Set(SetElement) set) {
   DictionaryDestroy(SetElement, Unit)(set);
 }
+
+typedef DictionaryCursor(SetElement, Unit) SetCursor(SetElement);
+
+static SetCursor(SetElement) SetCursorCreate(SetElement)(Set(SetElement) const* set) {
+  return DictionaryCursorCreate(SetElement, Unit)(set);
+}
+
+static Option(SetElement) SetCursorNext(SetElement)(SetCursor(SetElement) * cursor) {
+  auto result = DictionaryCursorNext(SetElement, Unit)(cursor);
+  return result.tag == Option_Some
+           ? OptionSome(SetElement)(result.value._0)
+           : OptionNone(SetElement)();
+}
+
+implement(
+  Cursor(SetElement),
+  SetCursor(SetElement),
+  .Next = (void*)SetCursorNext(SetElement),
+);
 
 #undef SetElement
 #undef SetElementHash
