@@ -4,31 +4,23 @@
 
 #ifndef SetElementHash
 #error Function 'UInt32 SetElementHash(SetElement value)' is not defined.
-#define SetElementHash(key)
 #endif
 
 #ifndef SetElementEqual
 #error Function 'Bool SetElementEqual(SetElement left, SetElement right)' is not defined.
-#define SetElementEqual(a, b)
 #endif
 
 #include <core/Core.h>
 #include <core/Generic.h>
 
-#ifndef DISABLE_Dectionary_SetElement_Unit
+#ifndef DISABLE_Dictionary_SetElement_Unit
 #define DictionaryKey SetElement
 #define DictionaryKeyHash SetElementHash
 #define DictionaryKeyEqual SetElementEqual
 #define DictionaryValue Unit
 #include <core/collections/Dictionary.h>
 #endif
-#undef DISABLE_Dectionary_SetElement_Unit
-
-#ifndef DISABLE_Option_SetElement
-#define OptionValue SetElement
-#include <core/Option.h>
-#endif
-#undef DISABLE_Option_SetElement
+#undef DISABLE_Dictionary_SetElement_Unit
 
 #ifndef DISABLE_Cursor_SetElement
 #define CursorElement SetElement

@@ -4,7 +4,6 @@
 
 #include <core/Core.h>
 #include <core/Generic.h>
-#include <stdlib.h>
 
 #ifndef DISABLE_Array_ListElement
 #define ArrayElement ListElement
@@ -41,14 +40,14 @@ typedef struct {
 static List(ListElement) ListDefault(ListElement)() {
   return (List(ListElement)){
     .elements = ArrayDefault(ListElement)(),
-    .count    = 0,
+    .count = 0,
   };
 }
 
 static List(ListElement) ListCreate(ListElement)(UInt capacity) {
   return (List(ListElement)){
     .elements = ArrayCreateWithCapacity(ListElement)(capacity),
-    .count    = 0,
+    .count = 0,
   };
 }
 
@@ -90,7 +89,7 @@ typedef struct {
 
 static ListCursor(ListElement) ListCursorCreate(ListElement)(List(ListElement) const* list) {
   return (ListCursor(ListElement)){
-    .list  = list,
+    .list = list,
     .index = 0,
   };
 }
