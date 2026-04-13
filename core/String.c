@@ -49,21 +49,27 @@ void StringAppend(String* string, Rune rune) {
   auto bytes = (UInt8[4]){};
   auto count = RuneToUTF8(rune, bytes);
 
-  for (auto i = 0; i < count; ++i) {
+  for (auto i = (UInt)0; i < count; ++i) {
     ListAppend(UInt8)(&string->bytes, bytes[i]);
   }
+
+  ListAppend(UInt8)(&string->bytes, 0); // Null terminator for C-string compatibility
 }
 
 void StringAppendCString(String* string, char const* cString) {
   for (; *cString; ++cString) {
     ListAppend(UInt8)(&string->bytes, *cString);
   }
+
+  ListAppend(UInt8)(&string->bytes, 0); // Null terminator for C-string compatibility
 }
 
 void StringAppendString(String* string, String const* other) {
-  for (auto i = 0; i < StringCountBytes(other); ++i) {
+  for (auto i = (UInt)0; i < StringCountBytes(other); ++i) {
     ListAppend(UInt8)(&string->bytes, ListAt(UInt8)(&other->bytes, i));
   }
+
+  ListAppend(UInt8)(&string->bytes, 0); // Null terminator for C-string compatibility
 }
 
 Bool StringEqual(String const* a, String const* b) {
@@ -71,7 +77,7 @@ Bool StringEqual(String const* a, String const* b) {
     return false;
   }
 
-  for (auto i = 0; i < StringCountBytes(a); ++i) {
+  for (auto i = (UInt)0; i < StringCountBytes(a); ++i) {
     if (ListAt(UInt8)(&a->bytes, i) != ListAt(UInt8)(&b->bytes, i)) {
       return false;
     }
@@ -80,10 +86,21 @@ Bool StringEqual(String const* a, String const* b) {
   return true;
 }
 
+UInt StringHash(String const* string) {
+  auto hash = 14695981039346656037ULL; // FNV offset basis
+
+  for (auto i = (UInt)0; i < StringCountBytes(string); ++i) {
+    hash ^= ListAt(UInt8)(&string->bytes, i);
+    hash *= 1099511628211ULL; // FNV prime
+  }
+
+  return (UInt)hash;
+}
+
 Array(UInt8) StringToBytes(String const* string) {
   auto bytes = ArrayCreateWithCapacity(UInt8)(StringCountBytes(string));
 
-  for (auto i = 0; i < StringCountBytes(string); ++i) {
+  for (auto i = (UInt)0; i < StringCountBytes(string); ++i) {
     ArraySetAt(UInt8)(&bytes, i, ListAt(UInt8)(&string->bytes, i));
   }
 
@@ -101,7 +118,7 @@ void StringDestroy(String string) {
 StringCursor StringCursorCreate(String const* string) {
   return (StringCursor){
     .string = string,
-    .index  = 0,
+    .index = 0,
   };
 }
 
