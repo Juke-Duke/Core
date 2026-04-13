@@ -20,7 +20,7 @@
 #ifndef List
 #define List(ListElement) GENERIC(List, ListElement)
 #define ListDefault(ListElement) GENERIC(ListDefault, ListElement)
-#define ListCreate(ListElement) GENERIC(ListCreate, ListElement)
+#define ListCreateWithCapacity(ListElement) GENERIC(ListCreateWithCapacity, ListElement)
 #define ListCount(ListElement) GENERIC(ListCount, ListElement)
 #define ListCapacity(ListElement) GENERIC(ListCapacity, ListElement)
 #define ListAt(ListElement) GENERIC(ListAt, ListElement)
@@ -44,7 +44,7 @@ static List(ListElement) ListDefault(ListElement)() {
   };
 }
 
-static List(ListElement) ListCreate(ListElement)(UInt capacity) {
+static List(ListElement) ListCreateWithCapacity(ListElement)(UInt capacity) {
   return (List(ListElement)){
     .elements = ArrayCreateWithCapacity(ListElement)(capacity),
     .count = 0,

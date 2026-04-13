@@ -1,3 +1,4 @@
+#include <stdio.h>
 #ifndef DictionaryKey
 #error Type parameter 'DictionaryKey' is not defined.
 #endif
@@ -54,6 +55,7 @@
 #ifndef Dictionary
 #define Dictionary(Key, Value) GENERIC2(Dictionary, Key, Value)
 #define DictionaryDefault(Key, Value) GENERIC2(DictionaryDefault, Key, Value)
+#define DictionaryCreateWithCapacity(Key, Value) GENERIC2(DictionaryCreateWithCapacity, Key, Value)
 #define DictionaryCount(Key, Value) GENERIC2(DictionaryCount, Key, Value)
 #define DictionaryFindPosition(Key, Value) GENERIC2(DictionaryFindPosition, Key, Value)
 #define DictionaryInsert(Key, Value) GENERIC2(DictionaryInsert, Key, Value)
@@ -74,7 +76,14 @@ typedef struct {
 
 static Dictionary(DictionaryKey, DictionaryValue) DictionaryDefault(DictionaryKey, DictionaryValue)() {
   return (Dictionary(DictionaryKey, DictionaryValue)){
-    .entries = ListCreate(Option(Tuple(DictionaryKey, DictionaryValue)))(11),
+    .entries = ListCreateWithCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(11),
+    .count = 0,
+  };
+}
+
+static Dictionary(DictionaryKey, DictionaryValue) DictionaryCreateWithCapacity(DictionaryKey, DictionaryValue)(UInt capacity) {
+  return (Dictionary(DictionaryKey, DictionaryValue)){
+    .entries = ListCreateWithCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(NextPrime(capacity)),
     .count = 0,
   };
 }
@@ -88,11 +97,11 @@ static UInt DictionaryFindPosition(DictionaryKey, DictionaryValue)(
   DictionaryKey key
 ) {
   auto offset = (UInt)1;
-  auto position = DictionaryKeyHash(key) % ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(entries);
+  auto position = DictionaryKeyHash(&key) % ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(entries);
 
   for (
     auto entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(entries, position);
-    entry.tag == Option_Some && !DictionaryKeyEqual(entry.value._0, key);
+    entry.tag == Option_Some && !DictionaryKeyEqual(&entry.value._0, &key);
     entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(entries, position)
   ) {
     position += offset;
@@ -148,9 +157,7 @@ static Option(DictionaryValue) DictionaryAt(DictionaryKey, DictionaryValue)(
 static void DictionaryRehash(DictionaryKey, DictionaryValue)(Dictionary(DictionaryKey, DictionaryValue) * dictionary) {
   auto oldEntries = dictionary->entries;
 
-  dictionary->entries = ListCreate(Option(Tuple(DictionaryKey, DictionaryValue)))(
-    NextPrime(ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries) * 2)
-  );
+  *dictionary = DictionaryCreateWithCapacity(DictionaryKey, DictionaryValue)(ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&oldEntries) * 2);
 
   for (auto i = 0; i < ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries); ++i) {
     ListSetAt(Option(Tuple(DictionaryKey, DictionaryValue)))(

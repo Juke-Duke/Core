@@ -31,6 +31,7 @@
 #ifndef Set
 #define Set(SetElement) GENERIC(Set, SetElement)
 #define SetDefault(SetElement) GENERIC(SetDefault, SetElement)
+#define SetCreateWithCapacity(SetElement) GENERIC(SetCreateWithCapacity, SetElement)
 #define SetCount(SetElement) GENERIC(SetCount, SetElement)
 #define SetInsert(SetElement) GENERIC(SetInsert, SetElement)
 #define SetContains(SetElement) GENERIC(SetContains, SetElement)
@@ -45,6 +46,10 @@ typedef Dictionary(SetElement, Unit) Set(SetElement);
 
 static Set(SetElement) SetDefault(SetElement)() {
   return DictionaryDefault(SetElement, Unit)();
+}
+
+static Set(SetElement) SetCreateWithCapacity(SetElement)(UInt capacity) {
+  return DictionaryCreateWithCapacity(SetElement, Unit)(capacity);
 }
 
 static UInt SetCount(SetElement)(Set(SetElement) const* set) {
