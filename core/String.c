@@ -52,30 +52,25 @@ void StringAppend(String* string, Rune rune) {
   for (auto i = (UInt)0; i < count; ++i) {
     ListAppend(UInt8)(&string->bytes, bytes[i]);
   }
-
-  ListAppend(UInt8)(&string->bytes, 0); // Null terminator for C-string compatibility
 }
 
 void StringAppendCString(String* string, char const* cString) {
   for (; *cString; ++cString) {
     ListAppend(UInt8)(&string->bytes, *cString);
   }
-
-  ListAppend(UInt8)(&string->bytes, 0); // Null terminator for C-string compatibility
 }
 
 void StringAppendString(String* string, String const* other) {
   for (auto i = (UInt)0; i < StringCountBytes(other); ++i) {
     ListAppend(UInt8)(&string->bytes, ListAt(UInt8)(&other->bytes, i));
   }
-
-  ListAppend(UInt8)(&string->bytes, 0); // Null terminator for C-string compatibility
 }
 
 char* StringToCString(String const* string) {
   auto cString = (char*)malloc(StringCountBytes(string) + 1);
 
-  memcpy(cString, string->bytes.elements.elements, StringCountBytes(string) + 1);
+  memcpy(cString, string->bytes.elements.elements, StringCountBytes(string));
+  cString[StringCountBytes(string)] = '\0';
 
   return cString;
 }
