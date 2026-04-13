@@ -72,6 +72,14 @@ void StringAppendString(String* string, String const* other) {
   ListAppend(UInt8)(&string->bytes, 0); // Null terminator for C-string compatibility
 }
 
+char* StringToCString(String const* string) {
+  auto cString = (char*)malloc(StringCountBytes(string) + 1);
+
+  memcpy(cString, string->bytes.elements.elements, StringCountBytes(string) + 1);
+
+  return cString;
+}
+
 Bool StringEqual(String const* a, String const* b) {
   if (StringCountBytes(a) != StringCountBytes(b)) {
     return false;

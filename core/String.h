@@ -28,6 +28,8 @@ void StringAppendCString(String* string, char const* cString);
 
 void StringAppendString(String* string, String const* other);
 
+char* StringToCString(String const* string);
+
 Bool StringEqual(String const* a, String const* b);
 
 UInt StringHash(String const* string);
