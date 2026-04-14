@@ -4,11 +4,11 @@
 #endif
 
 #ifndef DictionaryKeyHash
-#error Function 'UInt DictionaryKeyHash(DictionaryKey value)' is not defined.
+#error Function 'UInt DictionaryKeyHash(DictionaryKey const* value)' is not defined.
 #endif
 
 #ifndef DictionaryKeyEqual
-#error Function 'Bool DictionaryKeyEqual(DictionaryKey left, DictionaryKey right)' is not defined.
+#error Function 'Bool DictionaryKeyEqual(DictionaryKey const* left, DictionaryKey const* right)' is not defined.
 #endif
 
 #ifndef DictionaryValue
@@ -39,11 +39,11 @@
 #endif
 #undef DISABLE_Option_DictionaryValue
 
-#ifndef DISABLE_List_Option_Tuple_DictionaryKey_DictionaryValue
-#define ListElement Option(Tuple(DictionaryKey, DictionaryValue))
-#include <core/collections/List.h>
+#ifndef DISABLE_Array_Option_Tuple_DictionaryKey_DictionaryValue
+#define ArrayElement Option(Tuple(DictionaryKey, DictionaryValue))
+#include <core/collections/Array.h>
 #endif
-#undef DISABLE_List_Option_Tuple_DictionaryKey_DictionaryValue
+#undef DISABLE_Array_Option_Tuple_DictionaryKey_DictionaryValue
 
 #ifndef DISABLE_Cursor_Tuple_DictionaryKey_DictionaryValue
 #define DISABLE_Option_CursorElement
@@ -70,20 +70,20 @@
 #endif
 
 typedef struct {
-  List(Option(Tuple(DictionaryKey, DictionaryValue))) entries;
+  Array(Option(Tuple(DictionaryKey, DictionaryValue))) entries;
   UInt count;
 } Dictionary(DictionaryKey, DictionaryValue);
 
 static Dictionary(DictionaryKey, DictionaryValue) DictionaryDefault(DictionaryKey, DictionaryValue)() {
   return (Dictionary(DictionaryKey, DictionaryValue)){
-    .entries = ListCreateWithCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(11),
+    .entries = ArrayCreateWithCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(11),
     .count = 0,
   };
 }
 
 static Dictionary(DictionaryKey, DictionaryValue) DictionaryCreateWithCapacity(DictionaryKey, DictionaryValue)(UInt capacity) {
   return (Dictionary(DictionaryKey, DictionaryValue)){
-    .entries = ListCreateWithCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(NextPrime(capacity)),
+    .entries = ArrayCreateWithCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(NextPrime(capacity)),
     .count = 0,
   };
 }
@@ -93,22 +93,22 @@ static UInt DictionaryCount(DictionaryKey, DictionaryValue)(Dictionary(Dictionar
 }
 
 static UInt DictionaryFindPosition(DictionaryKey, DictionaryValue)(
-  List(Option(Tuple(DictionaryKey, DictionaryValue))) const* entries,
+  Array(Option(Tuple(DictionaryKey, DictionaryValue))) const* entries,
   DictionaryKey key
 ) {
   auto offset = (UInt)1;
-  auto position = DictionaryKeyHash(&key) % ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(entries);
+  auto position = DictionaryKeyHash(&key) % ArrayCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(entries);
 
   for (
-    auto entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(entries, position);
+    auto entry = ArrayAt(Option(Tuple(DictionaryKey, DictionaryValue)))(entries, position);
     entry.tag == Option_Some && !DictionaryKeyEqual(&entry.value._0, &key);
-    entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(entries, position)
+    entry = ArrayAt(Option(Tuple(DictionaryKey, DictionaryValue)))(entries, position)
   ) {
     position += offset;
     offset += 2;
 
-    if (position >= ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(entries)) {
-      position -= ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(entries);
+    if (position >= ArrayCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(entries)) {
+      position -= ArrayCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(entries);
     }
   }
 
@@ -126,7 +126,7 @@ static Option(DictionaryValue) DictionaryInsert(DictionaryKey, DictionaryValue)(
 
   auto previousValue = OptionNone(DictionaryValue)();
 
-  auto entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
+  auto entry = ArrayAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
   if (entry.tag == Option_Some) {
     previousValue = OptionSome(DictionaryValue)(entry.value._1);
   }
@@ -134,7 +134,7 @@ static Option(DictionaryValue) DictionaryInsert(DictionaryKey, DictionaryValue)(
     ++dictionary->count;
   }
 
-  ListSetAt(Option(Tuple(DictionaryKey, DictionaryValue)))(
+  ArraySetAt(Option(Tuple(DictionaryKey, DictionaryValue)))(
     &dictionary->entries,
     position,
     OptionSome(Tuple(DictionaryKey, DictionaryValue))(
@@ -142,7 +142,7 @@ static Option(DictionaryValue) DictionaryInsert(DictionaryKey, DictionaryValue)(
     )
   );
 
-  if (dictionary->count > ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries) / 2) {
+  if (dictionary->count > ArrayCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries) / 2) {
     DictionaryRehash(DictionaryKey, DictionaryValue)(dictionary);
   }
 
@@ -157,24 +157,24 @@ static Option(DictionaryValue) DictionaryAt(DictionaryKey, DictionaryValue)(
 static void DictionaryRehash(DictionaryKey, DictionaryValue)(Dictionary(DictionaryKey, DictionaryValue) * dictionary) {
   auto oldEntries = dictionary->entries;
 
-  *dictionary = DictionaryCreateWithCapacity(DictionaryKey, DictionaryValue)(ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&oldEntries) * 2);
+  *dictionary = DictionaryCreateWithCapacity(DictionaryKey, DictionaryValue)(ArrayCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&oldEntries) * 2);
 
-  for (auto i = 0; i < ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries); ++i) {
-    ListSetAt(Option(Tuple(DictionaryKey, DictionaryValue)))(
+  for (auto i = 0; i < ArrayCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries); ++i) {
+    ArraySetAt(Option(Tuple(DictionaryKey, DictionaryValue)))(
       &dictionary->entries,
       i,
       OptionNone(Tuple(DictionaryKey, DictionaryValue))()
     );
   }
 
-  for (auto i = 0; i < ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&oldEntries); ++i) {
-    if (ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&oldEntries, i).tag == Option_Some) {
-      auto entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&oldEntries, i).value;
+  for (auto i = 0; i < ArrayCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&oldEntries); ++i) {
+    if (ArrayAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&oldEntries, i).tag == Option_Some) {
+      auto entry = ArrayAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&oldEntries, i).value;
       DictionaryInsert(DictionaryKey, DictionaryValue)(dictionary, entry._0, entry._1);
     }
   }
 
-  ListDestroy(Option(Tuple(DictionaryKey, DictionaryValue)))(oldEntries);
+  ArrayDestroy(Option(Tuple(DictionaryKey, DictionaryValue)))(oldEntries);
 }
 
 static Bool DictionaryContainsKey(DictionaryKey, DictionaryValue)(
@@ -182,7 +182,7 @@ static Bool DictionaryContainsKey(DictionaryKey, DictionaryValue)(
   DictionaryKey key
 ) {
   auto position = DictionaryFindPosition(DictionaryKey, DictionaryValue)(&dictionary->entries, key);
-  return ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position).tag == Option_Some;
+  return ArrayAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position).tag == Option_Some;
 }
 
 static Option(DictionaryValue) DictionaryAt(DictionaryKey, DictionaryValue)(
@@ -190,7 +190,7 @@ static Option(DictionaryValue) DictionaryAt(DictionaryKey, DictionaryValue)(
   DictionaryKey key
 ) {
   auto position = DictionaryFindPosition(DictionaryKey, DictionaryValue)(&dictionary->entries, key);
-  auto entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
+  auto entry = ArrayAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
   return entry.tag == Option_Some ? OptionSome(DictionaryValue)(entry.value._1) : OptionNone(DictionaryValue)();
 }
 
@@ -199,10 +199,10 @@ static Option(Tuple(DictionaryKey, DictionaryValue)) DictionaryRemove(Dictionary
   DictionaryKey key
 ) {
   auto position = DictionaryFindPosition(DictionaryKey, DictionaryValue)(&dictionary->entries, key);
-  auto entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
+  auto entry = ArrayAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
 
   if (entry.tag == Option_Some) {
-    ListSetAt(Option(Tuple(DictionaryKey, DictionaryValue)))(
+    ArraySetAt(Option(Tuple(DictionaryKey, DictionaryValue)))(
       &dictionary->entries,
       position,
       OptionNone(Tuple(DictionaryKey, DictionaryValue))()
@@ -215,7 +215,7 @@ static Option(Tuple(DictionaryKey, DictionaryValue)) DictionaryRemove(Dictionary
 }
 
 static void DictionaryDestroy(DictionaryKey, DictionaryValue)(Dictionary(DictionaryKey, DictionaryValue) dictionary) {
-  ListDestroy(Option(Tuple(DictionaryKey, DictionaryValue)))(dictionary.entries);
+  ArrayDestroy(Option(Tuple(DictionaryKey, DictionaryValue)))(dictionary.entries);
   dictionary.count = 0;
 }
 
@@ -236,8 +236,8 @@ static DictionaryCursor(DictionaryKey, DictionaryValue) DictionaryCursorCreate(D
 static Option(Tuple(DictionaryKey, DictionaryValue)) DictionaryCursorNext(DictionaryKey, DictionaryValue)(
   DictionaryCursor(DictionaryKey, DictionaryValue) * dictionaryCursor
 ) {
-  while (dictionaryCursor->index < ListCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionaryCursor->dictionary->entries)) {
-    auto entry = ListAt(Option(Tuple(DictionaryKey, DictionaryValue)))(
+  while (dictionaryCursor->index < ArrayCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionaryCursor->dictionary->entries)) {
+    auto entry = ArrayAt(Option(Tuple(DictionaryKey, DictionaryValue)))(
       &dictionaryCursor->dictionary->entries,
       dictionaryCursor->index++
     );

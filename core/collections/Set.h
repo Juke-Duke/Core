@@ -3,11 +3,11 @@
 #endif
 
 #ifndef SetElementHash
-#error Function 'UInt32 SetElementHash(SetElement value)' is not defined.
+#error Function 'UInt32 SetElementHash(SetElement const* value)' is not defined.
 #endif
 
 #ifndef SetElementEqual
-#error Function 'Bool SetElementEqual(SetElement left, SetElement right)' is not defined.
+#error Function 'Bool SetElementEqual(SetElement const* left, SetElement const* right)' is not defined.
 #endif
 
 #include <core/Core.h>
