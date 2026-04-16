@@ -2,8 +2,18 @@
 #error Type parameter 'StackElement' is not defined.
 #endif
 
-#include <core/Core.h>
+#ifndef Stack
 #include <core/Generic.h>
+#define Stack(StackElement) GENERIC(Stack, StackElement)
+#define StackDefault(StackElement) GENERIC(StackDefault, StackElement)
+#define StackCount(StackElement) GENERIC(StackCount, StackElement)
+#define StackPush(StackElement) GENERIC(StackPush, StackElement)
+#define StackPop(StackElement) GENERIC(StackPop, StackElement)
+#define StackPeek(StackElement) GENERIC(StackPeek, StackElement)
+#define StackDestroy(StackElement) GENERIC(StackDestroy, StackElement)
+#endif
+
+#include <core/Core.h>
 
 #ifndef DISABLE_Array_StackElement
 #define ArrayElement StackElement
@@ -16,16 +26,6 @@
 #include <core/Option.h>
 #endif
 #undef DISABLE_Option_StackElement
-
-#ifndef Stack
-#define Stack(StackElement) GENERIC(Stack, StackElement)
-#define StackDefault(StackElement) GENERIC(StackDefault, StackElement)
-#define StackCount(StackElement) GENERIC(StackCount, StackElement)
-#define StackPush(StackElement) GENERIC(StackPush, StackElement)
-#define StackPop(StackElement) GENERIC(StackPop, StackElement)
-#define StackPeek(StackElement) GENERIC(StackPeek, StackElement)
-#define StackDestroy(StackElement) GENERIC(StackDestroy, StackElement)
-#endif
 
 typedef struct {
   Array(StackElement) elements;

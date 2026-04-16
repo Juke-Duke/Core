@@ -57,12 +57,12 @@ UUID UUIDCreateV7() {
 
   // First 48 bits: Unix timestamp in milliseconds
   auto timestamp = GetCurrentTimeMs();
-  uuid.bytes[0] = (UInt8)((timestamp >> 40) & 0xFF);
-  uuid.bytes[1] = (UInt8)((timestamp >> 32) & 0xFF);
-  uuid.bytes[2] = (UInt8)((timestamp >> 24) & 0xFF);
-  uuid.bytes[3] = (UInt8)((timestamp >> 16) & 0xFF);
-  uuid.bytes[4] = (UInt8)((timestamp >> 8) & 0xFF);
-  uuid.bytes[5] = (UInt8)(timestamp & 0xFF);
+  uuid.bytes[0]  = (UInt8)((timestamp >> 40) & 0xFF);
+  uuid.bytes[1]  = (UInt8)((timestamp >> 32) & 0xFF);
+  uuid.bytes[2]  = (UInt8)((timestamp >> 24) & 0xFF);
+  uuid.bytes[3]  = (UInt8)((timestamp >> 16) & 0xFF);
+  uuid.bytes[4]  = (UInt8)((timestamp >> 8) & 0xFF);
+  uuid.bytes[5]  = (UInt8)(timestamp & 0xFF);
 
   GetRandomBytes((UInt8*)&uuid.bytes[6], 10);
 
@@ -78,7 +78,10 @@ String UUIDToString(UUID const* uuid, Bool uppercase) {
                   ? "%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X"
                   : "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x";
 
-  snprintf(buffer, 37, format, uuid->bytes[0], uuid->bytes[1], uuid->bytes[2], uuid->bytes[3], uuid->bytes[4], uuid->bytes[5], uuid->bytes[6], uuid->bytes[7], uuid->bytes[8], uuid->bytes[9], uuid->bytes[10], uuid->bytes[11], uuid->bytes[12], uuid->bytes[13], uuid->bytes[14], uuid->bytes[15]);
+  snprintf(buffer, 37, format,
+    uuid->bytes[0], uuid->bytes[1], uuid->bytes[2], uuid->bytes[3], uuid->bytes[4],
+    uuid->bytes[5], uuid->bytes[6], uuid->bytes[7], uuid->bytes[8], uuid->bytes[9],
+    uuid->bytes[10], uuid->bytes[11], uuid->bytes[12], uuid->bytes[13], uuid->bytes[14], uuid->bytes[15]);
 
   return StringCreate(buffer);
 }
@@ -94,14 +97,14 @@ Bool UUIDEqual(UUID const* left, UUID const* right) {
 }
 
 UInt UUIDHash(UUID const* uuid) {
-  auto a = 0ULL;
-  auto b = 0ULL;
+  auto a = (UInt64)0;
+  auto b = (UInt64)0;
 
-  for (auto i = (UInt)0; i < 8; ++i) {
+  for (auto i = 0; i < 8; ++i) {
     a |= (UInt64)uuid->bytes[i] << (i * 8);
   }
 
-  for (auto i = (UInt)0; i < 8; ++i) {
+  for (auto i = 0; i < 8; ++i) {
     b |= (UInt64)uuid->bytes[i + 8] << (i * 8);
   }
 

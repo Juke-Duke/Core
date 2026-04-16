@@ -22,7 +22,7 @@ typedef interface(Cursor(CursorElement),
 );
 
 static Option(CursorElement) CursorNext(CursorElement)(Cursor(CursorElement)* cursor) {
-  return cursor->interface->Next(cursor->self);
+  return cursor->vTable->Next(cursor->self);
 }
 
 #undef CursorElement

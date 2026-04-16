@@ -121,7 +121,7 @@ void StringDestroy(String string) {
 StringCursor StringCursorCreate(String const* string) {
   return (StringCursor){
     .string = string,
-    .index = 0,
+    .index  = 0,
   };
 }
 

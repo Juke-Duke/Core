@@ -2,12 +2,8 @@
 #error Type parameter 'ArrayElement' is not defined.
 #endif
 
-#include <core/Core.h>
-#include <core/Generic.h>
-#include <stdlib.h>
-#include <string.h>
-
 #ifndef Array
+#include <core/Generic.h>
 #define Array(ArrayElement) GENERIC(Array, ArrayElement)
 #define ArrayDefault(ArrayElement) GENERIC(ArrayDefault, ArrayElement)
 #define ArrayCreate(ArrayElement) GENERIC(ArrayCreate, ArrayElement)
@@ -17,7 +13,17 @@
 #define ArrayAt(ArrayElement) GENERIC(ArrayAt, ArrayElement)
 #define ArraySetAt(ArrayElement) GENERIC(ArraySetAt, ArrayElement)
 #define ArrayDestroy(ArrayElement) GENERIC(ArrayDestroy, ArrayElement)
+#define ArrayCursor(ArrayElement) GENERIC(ArrayCursor, ArrayElement)
+#define ArrayCursorCreate(ArrayElement) GENERIC(ArrayCursorCreate, ArrayElement)
+#define ArrayCursorNext(ArrayElement) GENERIC(ArrayCursorNext, ArrayElement)
 #endif
+
+#include <core/Core.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define CursorElement ArrayElement
+#include <core/collections/Cursor.h>
 
 typedef struct {
   ArrayElement* elements;
@@ -66,6 +72,26 @@ static void ArrayDestroy(ArrayElement)(Array(ArrayElement) array) {
   free(array.elements);
   array.elements = null;
   array.capacity = 0;
+}
+
+typedef struct {
+  Array(ArrayElement) array;
+  UInt index;
+} ArrayCursor(ArrayElement);
+
+static ArrayCursor(ArrayElement) ArrayCursorCreate(ArrayElement)(Array(ArrayElement) array) {
+  return (ArrayCursor(ArrayElement)){
+    .array = array,
+    .index = 0,
+  };
+}
+
+static Option(ArrayElement) ArrayCursorNext(ArrayElement)(ArrayCursor(ArrayElement) * cursor) {
+  if (cursor->index < cursor->array.capacity) {
+    return OptionSome(ArrayElement)(cursor->array.elements[cursor->index++]);
+  }
+
+  return OptionNone(ArrayElement)();
 }
 
 #undef ArrayElement

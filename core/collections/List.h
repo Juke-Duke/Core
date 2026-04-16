@@ -2,22 +2,8 @@
 #error Type parameter 'ListElement' is not defined.
 #endif
 
-#include <core/Core.h>
-#include <core/Generic.h>
-
-#ifndef DISABLE_Array_ListElement
-#define ArrayElement ListElement
-#include <core/collections/Array.h>
-#endif
-#undef DISABLE_Array_ListElement
-
-#ifndef DISABLE_Cursor_ListElement
-#define CursorElement ListElement
-#include <core/collections/Cursor.h>
-#endif
-#undef DISABLE_Cursor_ListElement
-
 #ifndef List
+#include <core/Generic.h>
 #define List(ListElement) GENERIC(List, ListElement)
 #define ListDefault(ListElement) GENERIC(ListDefault, ListElement)
 #define ListCreateWithCapacity(ListElement) GENERIC(ListCreateWithCapacity, ListElement)
@@ -32,6 +18,14 @@
 #define ListCursorNext(ListElement) GENERIC(ListCursorNext, ListElement)
 #endif
 
+#include <core/Core.h>
+
+#ifndef DISABLE_Array_ListElement
+#define ArrayElement ListElement
+#include <core/collections/Array.h>
+#endif
+#undef DISABLE_Array_ListElement
+
 typedef struct {
   Array(ListElement) elements;
   UInt count;
@@ -40,14 +34,14 @@ typedef struct {
 static List(ListElement) ListDefault(ListElement)() {
   return (List(ListElement)){
     .elements = ArrayDefault(ListElement)(),
-    .count = 0,
+    .count    = 0,
   };
 }
 
 static List(ListElement) ListCreateWithCapacity(ListElement)(UInt capacity) {
   return (List(ListElement)){
     .elements = ArrayCreateWithCapacity(ListElement)(capacity),
-    .count = 0,
+    .count    = 0,
   };
 }
 
@@ -89,7 +83,7 @@ typedef struct {
 
 static ListCursor(ListElement) ListCursorCreate(ListElement)(List(ListElement) const* list) {
   return (ListCursor(ListElement)){
-    .list = list,
+    .list  = list,
     .index = 0,
   };
 }

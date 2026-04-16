@@ -10,8 +10,22 @@
 #error Function 'Bool SetElementEqual(SetElement const* left, SetElement const* right)' is not defined.
 #endif
 
-#include <core/Core.h>
+#ifndef Set
 #include <core/Generic.h>
+#define Set(SetElement) GENERIC(Set, SetElement)
+#define SetDefault(SetElement) GENERIC(SetDefault, SetElement)
+#define SetCreateWithCapacity(SetElement) GENERIC(SetCreateWithCapacity, SetElement)
+#define SetCount(SetElement) GENERIC(SetCount, SetElement)
+#define SetInsert(SetElement) GENERIC(SetInsert, SetElement)
+#define SetContains(SetElement) GENERIC(SetContains, SetElement)
+#define SetRemove(SetElement) GENERIC(SetRemove, SetElement)
+#define SetDestroy(SetElement) GENERIC(SetDestroy, SetElement)
+#define SetCursor(SetElement) GENERIC(SetCursor, SetElement)
+#define SetCursorCreate(SetElement) GENERIC(SetCursorCreate, SetElement)
+#define SetCursorNext(SetElement) GENERIC(SetCursorNext, SetElement)
+#endif
+
+#include <core/Core.h>
 
 #ifndef DISABLE_Dictionary_SetElement_Unit
 #define DictionaryKey SetElement
@@ -27,20 +41,6 @@
 #include <core/collections/Cursor.h>
 #endif
 #undef DISABLE_Cursor_SetElement
-
-#ifndef Set
-#define Set(SetElement) GENERIC(Set, SetElement)
-#define SetDefault(SetElement) GENERIC(SetDefault, SetElement)
-#define SetCreateWithCapacity(SetElement) GENERIC(SetCreateWithCapacity, SetElement)
-#define SetCount(SetElement) GENERIC(SetCount, SetElement)
-#define SetInsert(SetElement) GENERIC(SetInsert, SetElement)
-#define SetContains(SetElement) GENERIC(SetContains, SetElement)
-#define SetRemove(SetElement) GENERIC(SetRemove, SetElement)
-#define SetDestroy(SetElement) GENERIC(SetDestroy, SetElement)
-#define SetCursor(SetElement) GENERIC(SetCursor, SetElement)
-#define SetCursorCreate(SetElement) GENERIC(SetCursorCreate, SetElement)
-#define SetCursorNext(SetElement) GENERIC(SetCursorNext, SetElement)
-#endif
 
 typedef Dictionary(SetElement, Unit) Set(SetElement);
 

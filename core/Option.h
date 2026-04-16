@@ -2,10 +2,11 @@
 #error Type parameter 'OptionValue' is not defined.
 #endif
 
+#ifndef Option
+#include <core/Core.h>
 #include <core/Generic.h>
 
-#ifndef Option
-typedef enum {
+typedef enum : UInt8 {
   Option_None,
   Option_Some,
 } OptionTag;
@@ -15,7 +16,7 @@ typedef enum {
 #define OptionSome(OptionValue) GENERIC(OptionSome, OptionValue)
 #endif
 
-typedef struct {
+typedef struct Option(OptionValue) {
   OptionTag tag;
   OptionValue value;
 } Option(OptionValue);

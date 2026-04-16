@@ -2,22 +2,8 @@
 #error Type parameter 'DequeElement' is not defined.
 #endif
 
-#include <core/Core.h>
-#include <core/Generic.h>
-
-#ifndef DISABLE_Array_DequeElement
-#define ArrayElement DequeElement
-#include <core/collections/Array.h>
-#endif
-#undef DISABLE_Array_DequeElement
-
-#ifndef DISABLE_Option_DequeElement
-#define OptionValue DequeElement
-#include <core/Option.h>
-#endif
-#undef DISABLE_Option_DequeElement
-
 #ifndef Deque
+#include <core/Generic.h>
 #define Deque(DequeElement) GENERIC(Deque, DequeElement)
 #define DequeDefault(DequeElement) GENERIC(DequeDefault, DequeElement)
 #define DequeCount(DequeElement) GENERIC(DequeCount, DequeElement)
@@ -30,6 +16,20 @@
 #define DequeDequeueBack(DequeElement) GENERIC(DequeDequeueBack, DequeElement)
 #define DequeDestroy(DequeElement) GENERIC(DequeDestroy, DequeElement)
 #endif
+
+#include <core/Core.h>
+
+#ifndef DISABLE_Array_DequeElement
+#define ArrayElement DequeElement
+#include <core/collections/Array.h>
+#endif
+#undef DISABLE_Array_DequeElement
+
+#ifndef DISABLE_Option_DequeElement
+#define OptionValue DequeElement
+#include <core/Option.h>
+#endif
+#undef DISABLE_Option_DequeElement
 
 typedef struct {
   Array(DequeElement) ring;

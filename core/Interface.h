@@ -3,22 +3,22 @@
 #include <core/Core.h>
 
 #define interface(name, ...) \
-  struct {                   \
+  struct name {              \
     struct {                 \
       __VA_ARGS__            \
-    }* interface;            \
+    }* vTable;               \
     UInt8 self[];            \
   } name
 
-#define implement(...) implement_i(__VA_ARGS__)
+#define implement(...) _implement(__VA_ARGS__)
 
-#define implement_i(interfaceName, typeName, ...)                                                                     \
-  static interfaceName* typeName##_as_##interfaceName(typeName self) {                                                \
-    static typeof(*(interfaceName){}.interface) interface = {__VA_ARGS__};                                            \
-    auto obj                                              = (interfaceName*)malloc(sizeof(void*) + sizeof(typeName)); \
-    obj->interface                                        = &interface;                                               \
-    memcpy(obj->self, &self, sizeof(typeName));                                                                       \
-    return obj;                                                                                                       \
+#define _implement(Interface, Type, ...)                                                            \
+  static Interface* Type##_as_##Interface(Type self) {                                              \
+    static typeof(*(Interface){}.vTable) vTable = {__VA_ARGS__};                                    \
+    auto interface                              = (Interface*)malloc(sizeof(void*) + sizeof(Type)); \
+    interface->vTable                           = &vTable;                                          \
+    memcpy(interface->self, &self, sizeof(Type));                                                   \
+    return interface;                                                                               \
   }
 
-#define as(typeName, interfaceName) typeName##_as_##interfaceName
+#define as(Type, Interface) Type##_as_##Interface

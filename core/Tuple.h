@@ -54,10 +54,8 @@
 #endif
 #endif
 
-#include <core/Core.h>
-#include <core/Generic.h>
-
 #ifndef Tuple
+#include <core/Generic.h>
 #define Tuple(TupleT0, TupleT1) GENERIC2(Tuple, TupleT0, TupleT1)
 #define Tuple3(TupleT0, TupleT1, TupleT2) GENERIC3(Tuple, TupleT0, TupleT1, TupleT2)
 #define Tuple4(TupleT0, TupleT1, TupleT2, TupleT3) GENERIC4(Tuple, TupleT0, TupleT1, TupleT2, TupleT3)
