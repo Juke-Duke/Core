@@ -75,11 +75,11 @@ static void ArrayDestroy(ArrayElement)(Array(ArrayElement) array) {
 }
 
 typedef struct {
-  Array(ArrayElement) array;
+  Array(ArrayElement) const* array;
   UInt index;
 } ArrayCursor(ArrayElement);
 
-static ArrayCursor(ArrayElement) ArrayCursorCreate(ArrayElement)(Array(ArrayElement) array) {
+static ArrayCursor(ArrayElement) ArrayCursorCreate(ArrayElement)(Array(ArrayElement) const* array) {
   return (ArrayCursor(ArrayElement)){
     .array = array,
     .index = 0,
@@ -87,11 +87,17 @@ static ArrayCursor(ArrayElement) ArrayCursorCreate(ArrayElement)(Array(ArrayElem
 }
 
 static Option(ArrayElement) ArrayCursorNext(ArrayElement)(ArrayCursor(ArrayElement) * cursor) {
-  if (cursor->index < cursor->array.capacity) {
-    return OptionSome(ArrayElement)(cursor->array.elements[cursor->index++]);
+  if (cursor->index < cursor->array->capacity) {
+    return OptionSome(ArrayElement)(cursor->array->elements[cursor->index++]);
   }
 
   return OptionNone(ArrayElement)();
 }
+
+implement(
+  Cursor(ArrayElement),
+  Array(ArrayElement),
+  .Next = (void*)ArrayCursorNext(ArrayElement),
+);
 
 #undef ArrayElement
