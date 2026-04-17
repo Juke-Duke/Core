@@ -10,10 +10,10 @@
     UInt8 self[];            \
   } name
 
-#define implement(...) _implement(__VA_ARGS__)
+#define implement(...) __implement(__VA_ARGS__)
 
-#define _implement(Interface, Type, ...)                                                            \
-  static Interface* Type##_as_##Interface(Type self) {                                              \
+#define __implement(Interface, Type, ...)                                                            \
+  static Interface* as(Interface, Type)(Type self) {                                                \
     static typeof(*(Interface){}.vTable) vTable = {__VA_ARGS__};                                    \
     auto interface                              = (Interface*)malloc(sizeof(void*) + sizeof(Type)); \
     interface->vTable                           = &vTable;                                          \
