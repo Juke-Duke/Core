@@ -38,8 +38,10 @@ static Array(ArrayElement) ArrayDefault(ArrayElement)() {
 }
 
 static Array(ArrayElement) ArrayCreate(ArrayElement)(ArrayElement* elements, UInt count) {
+  auto capacity = sizeof(ArrayElement) * count;
+
   return (Array(ArrayElement)){
-    .elements = (ArrayElement*)memcpy(malloc(sizeof(ArrayElement) * count), elements, sizeof(ArrayElement) * count),
+    .elements = (ArrayElement*)memcpy(malloc(capacity), elements, capacity),
     .capacity = count,
   };
 }

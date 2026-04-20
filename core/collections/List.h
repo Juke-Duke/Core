@@ -62,9 +62,9 @@ static void ListSetAt(ListElement)(List(ListElement) * list, UInt index, ListEle
 }
 
 static void ListAppend(ListElement)(List(ListElement) * list, ListElement value) {
-  if (list->count == list->elements.capacity) {
-    list->elements.capacity = list->elements.capacity * 2 + 8;
-    ArrayResize(ListElement)(&list->elements, list->elements.capacity);
+  if (list->count == ArrayCapacity(ListElement)(&list->elements)) {
+    auto newCapacity = ArrayCapacity(ListElement)(&list->elements) * 2 + 8;
+    ArrayResize(ListElement)(&list->elements, newCapacity);
   }
 
   ArraySetAt(ListElement)(&list->elements, list->count, value);
