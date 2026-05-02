@@ -2,6 +2,10 @@
 #error Type parameter 'StackElement' is not defined.
 #endif
 
+#ifndef StackElementDefault
+#define StackElementDefault() ((StackElement){})
+#endif
+
 #ifndef StackElementClone
 #define StackElementClone(value) (*(value))
 #endif
@@ -36,6 +40,7 @@
 #define DISABLE_CURSOR_ArrayElement_IMPLEMENTATION
 #endif
 #define ArrayElement StackElement
+#define ArrayElementDefault StackElementDefault
 #define ArrayElementClone StackElementClone
 #define ArrayElementDestroy StackElementDestroy
 #include <core/collections/Array.h>
@@ -104,7 +109,7 @@ void StackPush(StackElement)(Stack(StackElement) * stack, StackElement element) 
     ArrayResize(StackElement)(&stack->elements, ArrayCapacity(StackElement)(&stack->elements) * 2 + 8);
   }
 
-  *ArrayAtMut(StackElement)(&stack->elements, stack->count) = StackElementClone(&element);
+  *ArrayAtMut(StackElement)(&stack->elements, stack->count) = element;
   ++stack->count;
 }
 
@@ -123,6 +128,13 @@ Option(StackElement) StackPeek(StackElement)(Stack(StackElement) const* stack) {
   }
 
   return OptionSome(StackElement)(*ArrayAt(StackElement)(&stack->elements, stack->count - 1));
+}
+
+Stack(StackElement) StackClone(StackElement)(Stack(StackElement) const* stack) {
+  return (Stack(StackElement)){
+    .elements = ArrayClone(StackElement)(&stack->elements),
+    .count    = stack->count,
+  };
 }
 
 void StackDestroy(StackElement)(Stack(StackElement) * stack) {

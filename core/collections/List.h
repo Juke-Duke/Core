@@ -2,6 +2,10 @@
 #error Type parameter 'ListElement' is not defined.
 #endif
 
+#ifndef ListElementDefault
+#define ListElementDefault() ((ListElement){})
+#endif
+
 #ifndef ListElementClone
 #define ListElementClone(element) (*(element))
 #endif
@@ -12,7 +16,6 @@
 
 #ifndef List
 #include <core/Core.h>
-#include <core/Debug.h>
 
 #define List(ListElement) GENERIC(List, ListElement)
 #define ListDefault(ListElement) CONCAT(List(ListElement), Default)
@@ -37,9 +40,11 @@
 #ifdef ListElement
 #if defined LIST_IMPLEMENTATION && !defined DISABLE_ARRAY_ListElement_IMPLEMENTATION
 #define ARRAY_IMPLEMENTATION
+#define DISABLE_OPTION_REF_ArrayElement_IMPLEMENTATION
 #define DISABLE_CURSOR_ArrayElement_IMPLEMENTATION
 #endif
 #define ArrayElement ListElement
+#define ArrayElementDefault ListElementDefault
 #define ArrayElementClone ListElementClone
 #define ArrayElementDestroy ListElementDestroy
 #include <core/collections/Array.h>
@@ -88,6 +93,8 @@ ListCursor(ListElement) ListCursorClone(ListElement)(ListCursor(ListElement) con
 void ListCursorDestroy(ListElement)(ListCursor(ListElement) * cursor);
 
 #ifdef LIST_IMPLEMENTATION
+#include <core/Debug.h>
+
 List(ListElement) ListDefault(ListElement)() {
   return (List(ListElement)){
     .elements = ArrayDefault(ListElement)(),
@@ -95,7 +102,7 @@ List(ListElement) ListDefault(ListElement)() {
   };
 }
 
-List(ListElement) ListCreate(ListElement)(ListElement const* elements, UInt count) {
+List(ListElement) ListCreate(ListElement)(ListElement const elements[], UInt count) {
   return (List(ListElement)){
     .elements = ArrayCreate(ListElement)(elements, count),
     .count    = count,
@@ -149,7 +156,7 @@ void ListAppend(ListElement)(List(ListElement) * list, ListElement value) {
     ArrayResize(ListElement)(&list->elements, ArrayCapacity(ListElement)(&list->elements) * 2 + 8);
   }
 
-  *ArrayAtMut(ListElement)(list, list->count) = ListElementClone(&value);
+  *ArrayAtMut(ListElement)(list, list->count) = value;
   ++list->count;
 }
 

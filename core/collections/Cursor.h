@@ -32,6 +32,8 @@ Cursor(CursorElement) * CursorClone(CursorElement)(Cursor(CursorElement) const* 
 void CursorDestroy(CursorElement)(Cursor(CursorElement) * cursor);
 
 #ifdef CURSOR_IMPLEMENTATION
+#include <stdlib.h>
+
 Option(Ref(CursorElement)) CursorNext(CursorElement)(Cursor(CursorElement) * cursor) {
   return InterfaceDispatch(Next, cursor);
 }

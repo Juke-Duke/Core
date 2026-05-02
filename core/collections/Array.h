@@ -2,6 +2,10 @@
 #error Type parameter 'ArrayElement' is not defined.
 #endif
 
+#ifndef ArrayElementDefault
+#define ArrayElementDefault() ((ArrayElement){})
+#endif
+
 #ifndef ArrayElementClone
 #define ArrayElementClone(element) (*(element))
 #endif
@@ -12,8 +16,6 @@
 
 #ifndef Array
 #include <core/Core.h>
-#include <core/Debug.h>
-#include <stdlib.h>
 
 #define Array(ArrayElement) GENERIC(Array, ArrayElement)
 #define ArrayDefault(ArrayElement) CONCAT(Array(ArrayElement), Default)
@@ -78,6 +80,9 @@ ArrayCursor(ArrayElement) ArrayCursorClone(ArrayElement)(ArrayCursor(ArrayElemen
 void ArrayCursorDestroy(ArrayElement)(ArrayCursor(ArrayElement) * cursor);
 
 #ifdef ARRAY_IMPLEMENTATION
+#include <core/Debug.h>
+#include <stdlib.h>
+
 Array(ArrayElement) ArrayDefault(ArrayElement)() {
   return (Array(ArrayElement)){
     .elements = null,
@@ -85,7 +90,7 @@ Array(ArrayElement) ArrayDefault(ArrayElement)() {
   };
 }
 
-Array(ArrayElement) ArrayCreate(ArrayElement)(ArrayElement const* elements, UInt count) {
+Array(ArrayElement) ArrayCreate(ArrayElement)(ArrayElement const elements[], UInt count) {
   if (count == 0) {
     return ArrayDefault(ArrayElement)();
   }
@@ -96,7 +101,7 @@ Array(ArrayElement) ArrayCreate(ArrayElement)(ArrayElement const* elements, UInt
   }
 
   for (auto i = (UInt)0; i < count; ++i) {
-    array[i] = ArrayElementClone(&elements[i]);
+    array[i] = elements[i];
   }
 
   return (Array(ArrayElement)){
@@ -115,8 +120,12 @@ Array(ArrayElement) ArrayCreateFill(ArrayElement)(ArrayElement value, UInt count
     Error("Allocation failed.");
   }
 
-  for (auto i = (UInt)0; i < count; ++i) {
+  for (auto i = (UInt)0; i < count - 1; ++i) {
     array[i] = ArrayElementClone(&value);
+  }
+
+  if (count > 0) {
+    array[count - 1] = value;
   }
 
   return (Array(ArrayElement)){
@@ -130,9 +139,13 @@ Array(ArrayElement) ArrayCreateWithCapacity(ArrayElement)(UInt capacity) {
     return ArrayDefault(ArrayElement)();
   }
 
-  auto array = (ArrayElement*)calloc(capacity, sizeof(ArrayElement));
+  auto array = (ArrayElement*)malloc(sizeof(ArrayElement) * capacity);
   if (array == null) {
     Error("Allocation failed.");
+  }
+
+  for (auto i = (UInt)0; i < capacity; ++i) {
+    array[i] = ArrayElementDefault();
   }
 
   return (Array(ArrayElement)){

@@ -9,6 +9,7 @@ typedef enum : UInt8 {
 #define Option(OptionValue) GENERIC(Option, OptionValue)
 #define OptionNone(OptionValue) CONCAT(Option(OptionValue), None)
 #define OptionSome(OptionValue) CONCAT(Option(OptionValue), Some)
+#define OptionDefault(OptionValue) CONCAT(Option(OptionValue), Default)
 #define OptionClone(OptionValue) CONCAT(Option(OptionValue), Clone)
 #define OptionDestroy(OptionValue) CONCAT(Option(OptionValue), Destroy)
 #endif
@@ -33,6 +34,7 @@ typedef struct Option(OptionValue) {
 
 Option(OptionValue) OptionNone(OptionValue)();
 Option(OptionValue) OptionSome(OptionValue)(OptionValue value);
+Option(OptionValue) OptionDefault(OptionValue)();
 Option(OptionValue) OptionClone(OptionValue)(Option(OptionValue) const* option);
 void OptionDestroy(OptionValue)(Option(OptionValue) * option);
 
@@ -40,7 +42,7 @@ void OptionDestroy(OptionValue)(Option(OptionValue) * option);
 Option(OptionValue) OptionNone(OptionValue)() {
   return (Option(OptionValue)){
     .tag   = Option_None,
-    .value = {0},
+    .value = {},
   };
 }
 
@@ -49,6 +51,10 @@ Option(OptionValue) OptionSome(OptionValue)(OptionValue value) {
     .tag   = Option_Some,
     .value = value,
   };
+}
+
+Option(OptionValue) OptionDefault(OptionValue)() {
+  return OptionNone(OptionValue)();
 }
 
 Option(OptionValue) OptionClone(OptionValue)(Option(OptionValue) const* option) {
@@ -64,7 +70,7 @@ void OptionDestroy(OptionValue)(Option(OptionValue) * option) {
   }
 
   option->tag   = Option_None;
-  option->value = (OptionValue){0};
+  option->value = (OptionValue){};
 }
 #endif // OPTION_IMPLEMENTATION
 #endif // OptionValue

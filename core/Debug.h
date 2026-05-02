@@ -1,6 +1,8 @@
 #pragma once
 
 #include <core/Core.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #if defined __APPLE__ || defined __linux__ || defined __unix__
 #include <dlfcn.h>
@@ -9,117 +11,133 @@
 #if defined __APPLE__
 #include <mach-o/dyld.h>
 #endif
-#elif defined _WIN32 || defined _WIN64
+#elif defined _WIN32
 #define WIN32_LEAN_AND_MEAN
-#include <dbghelp.h>
 #include <windows.h>
+#include <dbghelp.h>
+#pragma comment(lib, "dbghelp.lib")
 #endif
 
 static inline void __PrintBacktrace() {
 #ifdef _WIN32
-  HANDLE process       = GetCurrentProcess();
-  HANDLE thread        = GetCurrentThread();
-  CONTEXT context      = {0};
-  context.ContextFlags = CONTEXT_FULL;
-  RtlCaptureContext(&context);
+  auto process = GetCurrentProcess();
+  SymSetOptions(SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS);
+  auto symbolsReady   = SymInitialize(process, null, true);
 
-  SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS);
-  if (!SymInitialize(process, NULL, TRUE)) {
-    return;
-  }
+  auto addresses      = (void* [64]){0};
+  auto addressesCount = CaptureStackBackTrace(0, 64, addresses, null);
 
-  STACKFRAME64 frame = {0};
-#ifdef _M_X64
-  frame.AddrPC.Offset    = context.Rip;
-  frame.AddrStack.Offset = context.Rsp;
-  frame.AddrFrame.Offset = context.Rbp;
-  frame.AddrPC.Mode      = AddrModeFlat;
-  frame.AddrStack.Mode   = AddrModeFlat;
-  frame.AddrFrame.Mode   = AddrModeFlat;
-#else
-  frame.AddrPC.Offset    = context.Eip;
-  frame.AddrStack.Offset = context.Esp;
-  frame.AddrFrame.Offset = context.Ebp;
-  frame.AddrPC.Mode      = AddrModeFlat;
-  frame.AddrStack.Mode   = AddrModeFlat;
-  frame.AddrFrame.Mode   = AddrModeFlat;
-#endif
+  for (auto i = (WORD)0; i < addressesCount; ++i) {
+    auto address    = addresses[i];
+    auto modulePath = (char[MAX_PATH]){"<unknown module>"};
+    auto offset     = (unsigned long long)0;
 
-  Bool skip_first = true;
-  while (StackWalk64(
-#ifdef _M_X64
-    IMAGE_FILE_MACHINE_AMD64,
-#else
-    IMAGE_FILE_MACHINE_I386,
-#endif
-    process,
-    thread,
-    &frame,
-    &context,
-    NULL,
-    SymFunctionTableAccess64,
-    SymGetModuleBase64,
-    NULL
-  )) {
-    if (skip_first) {
-      skip_first = false;
-      continue;
+    auto memory     = (MEMORY_BASIC_INFORMATION){};
+    if (VirtualQuery(address, &memory, sizeof(memory)) == sizeof(memory)) {
+      auto module = (HMODULE)memory.AllocationBase;
+      if (GetModuleFileNameA(module, modulePath, MAX_PATH) == 0) {
+        strcpy_s(modulePath, sizeof(modulePath), "<unknown module>");
+      }
+      offset = (unsigned long long)((size_t)address - (size_t)module);
     }
 
-    char symbol_buffer[sizeof(SYMBOL_INFO) + 256] = {0};
-    SYMBOL_INFO* symbol                           = (SYMBOL_INFO*)symbol_buffer;
-    symbol->SizeOfStruct                          = sizeof(SYMBOL_INFO);
-    symbol->MaxNameLen                            = 256;
-
-    DWORD64 address                               = frame.AddrPC.Offset;
-    if (!SymFromAddr(process, address, NULL, symbol)) {
-      fprintf(stderr, "  at 0x%llx\n", (unsigned long long)address);
-      continue;
-    }
-
-    IMAGEHLP_LINE64 lineInfo = {0};
-    lineInfo.SizeOfStruct    = sizeof(lineInfo);
-    DWORD lineDisplacement   = 0;
-    if (SymGetLineFromAddr64(process, address, &lineDisplacement, &lineInfo) && lineInfo.FileName) {
-      auto path = strdup(lineInfo.FileName);
-      if (path) {
-        auto segment = path;
-        while (*segment) {
-          if (*segment == '\\') {
-            *segment = '/';
-          }
-          ++segment;
-        }
-
-        fprintf(stderr, "  at %s in %s:%lu\n", symbol->Name, path, (unsigned long)lineInfo.LineNumber);
-        free(path);
-        continue;
+    char moduleStem[260] = {0};
+    {
+      auto moduleName = strrchr(modulePath, '\\');
+      moduleName      = moduleName ? moduleName + 1 : modulePath;
+      strcpy_s(moduleStem, sizeof(moduleStem), moduleName);
+      auto dot = strrchr(moduleStem, '.');
+      if (dot) {
+        *dot = '\0';
       }
     }
 
-    IMAGEHLP_MODULE64 moduleInfo = {0};
-    moduleInfo.SizeOfStruct      = sizeof(moduleInfo);
-    if (SymGetModuleInfo64(process, address, &moduleInfo) && moduleInfo.ImageName) {
-      auto path = strdup(moduleInfo.ImageName);
-      if (path) {
-        auto segment = path;
-        while (*segment) {
-          if (*segment == '\\') {
-            *segment = '/';
-          }
-          ++segment;
-        }
+    char function[1024] = "???";
+    char path[2048]     = "";
+    auto line           = (unsigned long)0;
 
-        fprintf(stderr, "  at %s in %s\n", symbol->Name, path);
-        free(path);
-        continue;
+    if (symbolsReady) {
+      auto symbolBuffer    = (unsigned char[(sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(char) + 7) / 8]){0};
+      auto symbol          = (PSYMBOL_INFO)symbolBuffer;
+      symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+      symbol->MaxNameLen   = MAX_SYM_NAME;
+
+      auto displacement    = (DWORD64)0;
+      if (SymFromAddr(process, (DWORD64)(size_t)address, &displacement, symbol) && symbol->Name[0] != '\0') {
+        strcpy_s(function, sizeof(function), symbol->Name);
       }
     }
 
-    fprintf(stderr, "  at %s\n", symbol->Name);
+    char command[4096] = {0};
+    snprintf(
+      command,
+      sizeof(command),
+      "llvm-symbolizer --relative-address --obj=\"%s\" 0x%llx 2>nul",
+      modulePath,
+      offset
+    );
+
+    auto fp = _popen(command, "r");
+    if (fp) {
+      char functionLine[1024] = {0};
+      char locationLine[2048] = {0};
+
+      if (fgets(functionLine, (int)sizeof(functionLine), fp)) {
+        functionLine[strcspn(functionLine, "\r\n")] = '\0';
+        if (functionLine[0] != '\0' && strcmp(functionLine, "??") != 0) {
+          strcpy_s(function, sizeof(function), functionLine);
+        }
+      }
+
+      if (fgets(locationLine, (int)sizeof(locationLine), fp)) {
+        locationLine[strcspn(locationLine, "\r\n")] = '\0';
+        if (locationLine[0] != '\0' && strcmp(locationLine, "??") != 0) {
+          auto lastColon = strrchr(locationLine, ':');
+          if (lastColon) {
+            *lastColon     = '\0';
+            auto lineColon = strrchr(locationLine, ':');
+            if (lineColon) {
+              *lineColon      = '\0';
+              auto parsedLine = strtoul(lineColon + 1, null, 10);
+              if (parsedLine > 0) {
+                line = parsedLine;
+              }
+            }
+          }
+          strcpy_s(path, sizeof(path), locationLine);
+        }
+      }
+
+      _pclose(fp);
+    }
+
+    if (function[0] == '?' || function[0] == '\0') {
+      strcpy_s(function, sizeof(function), moduleStem);
+    }
+
+    if (path[0] == '\0') {
+      strcpy_s(path, sizeof(path), moduleStem);
+    }
+
+    if (strcmp(function, "snprintf") == 0 || strcmp(function, "_snprintf") == 0 || strcmp(function, "__PrintBacktrace") == 0) {
+      continue;
+    }
+
+    if (line > 0 && strcmp(path, moduleStem) != 0) {
+      fprintf(stderr, "  at %s in %s:%lu\n", function, path, line);
+    }
+    else {
+      fprintf(stderr, "  at %s in %s\n", function, moduleStem);
+    }
   }
 
-  SymCleanup(process);
+  if (symbolsReady) {
+    SymCleanup(process);
+  }
+
+  if (addressesCount == 0) {
+    fprintf(stderr, "  at <unavailable> in <unavailable>:0\n");
+  }
 #else
   auto capacity       = 64;
   auto addressesCount = 0;
@@ -195,6 +213,6 @@ static inline void __PrintBacktrace() {
   do {                                                            \
     fflush(null);                                                 \
     fprintf(stderr, "\n" format "\n" __VA_OPT__(, ) __VA_ARGS__); \
-    __PrintBacktrace();                                            \
+    __PrintBacktrace();                                           \
     abort();                                                      \
   } while (false)

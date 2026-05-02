@@ -2,6 +2,10 @@
 #error Type parameter 'DequeElement' is not defined.
 #endif
 
+#ifndef DequeElementDefault
+#define DequeElementDefault() ((DequeElement){})
+#endif
+
 #ifndef DequeElementClone
 #define DequeElementClone(element) (*(element))
 #endif
@@ -39,6 +43,7 @@
 #define DISABLE_CURSOR_ArrayElement_IMPLEMENTATION
 #endif
 #define ArrayElement DequeElement
+#define ArrayElementDefault DequeElementDefault
 #define ArrayElementClone DequeElementClone
 #define ArrayElementDestroy DequeElementDestroy
 #include <core/collections/Array.h>
@@ -174,6 +179,14 @@ Option(DequeElement) DequeDequeueBack(DequeElement)(Deque(DequeElement) * deque)
   --deque->count;
 
   return OptionSome(DequeElement)(element);
+}
+
+Deque(DequeElement) DequeClone(DequeElement)(Deque(DequeElement) const* deque) {
+  return (Deque(DequeElement)){
+    .ring  = ArrayClone(DequeElement)(&deque->ring),
+    .front = deque->front,
+    .count = deque->count,
+  };
 }
 
 void DequeDestroy(DequeElement)(Deque(DequeElement) * deque) {
