@@ -8,13 +8,8 @@ typedef struct {
 } UUID;
 
 UUID UUIDDefault();
-
 UUID UUIDCreateV4();
-
 UUID UUIDCreateV7();
-
 String UUIDToString(UUID const* uuid, Bool uppercase);
-
 Bool UUIDEqual(UUID const* left, UUID const* right);
-
 UInt UUIDHash(UUID const* uuid);

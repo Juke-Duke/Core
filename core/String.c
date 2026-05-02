@@ -93,7 +93,7 @@ UInt StringHash(String const* string) {
   auto hash = 14695981039346656037ULL; // FNV offset basis
 
   for (auto i = (UInt)0; i < StringCountBytes(string); ++i) {
-    hash ^= ListAt(UInt8)(&string->bytes, i);
+    hash ^= *ListAt(UInt8)(&string->bytes, i);
     hash *= 1099511628211ULL; // FNV prime
   }
 
@@ -104,7 +104,7 @@ Array(UInt8) StringToBytes(String const* string) {
   auto bytes = ArrayCreateWithCapacity(UInt8)(StringCountBytes(string));
 
   for (auto i = (UInt)0; i < StringCountBytes(string); ++i) {
-    ArraySetAt(UInt8)(&bytes, i, ListAt(UInt8)(&string->bytes, i));
+    *ArrayAtMut(UInt8)(&bytes, i) = *ListAt(UInt8)(&string->bytes, i);
   }
 
   return bytes;
@@ -114,8 +114,18 @@ ListCursor(UInt8) StringBytesCursorCreate(String const* string) {
   return ListCursorCreate(UInt8)(&string->bytes);
 }
 
+String StringClone(String const* string) {
+  auto clone = StringDefault();
+
+  for (auto i = (UInt)0; i < StringCountBytes(string); ++i) {
+    ListAppend(UInt8)(&clone.bytes, ListAt(UInt8)(&string->bytes, i));
+  }
+
+  return clone;
+}
+
 void StringDestroy(String string) {
-  ListDestroy(UInt8)(string.bytes);
+  ListDestroy(UInt8)(&string.bytes);
 }
 
 StringCursor StringCursorCreate(String const* string) {
@@ -125,70 +135,70 @@ StringCursor StringCursorCreate(String const* string) {
   };
 }
 
-Option(Rune) StringCursorNext(StringCursor* cursor) {
+Option(Ref(Rune)) StringCursorNext(StringCursor* cursor) {
   if (cursor->index == StringCountBytes(cursor->string)) {
-    return OptionNone(Rune)();
+    return OptionNone(Ref(Rune))();
   }
 
   auto rune = (Rune){};
 
-  if ((ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x80) == 0) {
-    rune = ListAt(UInt8)(&cursor->string->bytes, cursor->index);
+  if ((*ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x80) == 0) {
+    rune = *ListAt(UInt8)(&cursor->string->bytes, cursor->index);
     cursor->index += 1;
   }
-  else if ((ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0xE0) == 0xC0) {
-    rune = (ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x1F) << 6;
-    rune |= ListAt(UInt8)(&cursor->string->bytes, cursor->index + 1) & 0x3F;
+  else if ((*ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0xE0) == 0xC0) {
+    rune = (*ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x1F) << 6;
+    rune |= *ListAt(UInt8)(&cursor->string->bytes, cursor->index + 1) & 0x3F;
     cursor->index += 2;
   }
-  else if ((ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0xF0) == 0xE0) {
-    rune = (ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x0F) << 12;
-    rune |= (ListAt(UInt8)(&cursor->string->bytes, cursor->index + 1) & 0x3F) << 6;
-    rune |= ListAt(UInt8)(&cursor->string->bytes, cursor->index + 2) & 0x3F;
+  else if ((*(ListAt(UInt8)(&cursor->string->bytes, cursor->index)) & 0xF0) == 0xE0) {
+    rune = (*ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x0F) << 12;
+    rune |= (*ListAt(UInt8)(&cursor->string->bytes, cursor->index + 1) & 0x3F) << 6;
+    rune |= *ListAt(UInt8)(&cursor->string->bytes, cursor->index + 2) & 0x3F;
     cursor->index += 3;
   }
-  else if ((ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0xF8) == 0xF0) {
-    rune = (ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x07) << 18;
-    rune |= (ListAt(UInt8)(&cursor->string->bytes, cursor->index + 1) & 0x3F) << 12;
-    rune |= (ListAt(UInt8)(&cursor->string->bytes, cursor->index + 2) & 0x3F) << 6;
-    rune |= ListAt(UInt8)(&cursor->string->bytes, cursor->index + 3) & 0x3F;
+  else if ((*(ListAt(UInt8)(&cursor->string->bytes, cursor->index)) & 0xF8) == 0xF0) {
+    rune = (*ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x07) << 18;
+    rune |= (*ListAt(UInt8)(&cursor->string->bytes, cursor->index + 1) & 0x3F) << 12;
+    rune |= (*ListAt(UInt8)(&cursor->string->bytes, cursor->index + 2) & 0x3F) << 6;
+    rune |= *ListAt(UInt8)(&cursor->string->bytes, cursor->index + 3) & 0x3F;
     cursor->index += 4;
   }
 
-  return OptionSome(Rune)(rune);
+  return OptionSome(Ref(Rune))(&rune);
 }
 
-Option(Rune) StringCursorPeek(StringCursor* cursor) {
+Option(Ref(Rune)) StringCursorPeek(StringCursor* cursor) {
   if (cursor->index == StringCountBytes(cursor->string)) {
-    return OptionNone(Rune)();
+    return OptionNone(Ref(Rune))();
   }
 
   auto rune = (Rune){};
 
-  if ((ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x80) == 0) {
-    rune = ListAt(UInt8)(&cursor->string->bytes, cursor->index);
+  if ((*ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x80) == 0) {
+    rune = *ListAt(UInt8)(&cursor->string->bytes, cursor->index);
   }
-  else if ((ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0xE0) == 0xC0) {
-    rune = (ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x1F) << 6;
-    rune |= ListAt(UInt8)(&cursor->string->bytes, cursor->index + 1) & 0x3F;
+  else if ((*ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0xE0) == 0xC0) {
+    rune = (*ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x1F) << 6;
+    rune |= *ListAt(UInt8)(&cursor->string->bytes, cursor->index + 1) & 0x3F;
   }
-  else if ((ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0xF0) == 0xE0) {
-    rune = (ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x0F) << 12;
-    rune |= (ListAt(UInt8)(&cursor->string->bytes, cursor->index + 1) & 0x3F) << 6;
-    rune |= ListAt(UInt8)(&cursor->string->bytes, cursor->index + 2) & 0x3F;
+  else if ((*(ListAt(UInt8)(&cursor->string->bytes, cursor->index)) & 0xF0) == 0xE0) {
+    rune = (*ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x0F) << 12;
+    rune |= (*ListAt(UInt8)(&cursor->string->bytes, cursor->index + 1) & 0x3F) << 6;
+    rune |= *ListAt(UInt8)(&cursor->string->bytes, cursor->index + 2) & 0x3F;
   }
-  else if ((ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0xF8) == 0xF0) {
-    rune = (ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x07) << 18;
-    rune |= (ListAt(UInt8)(&cursor->string->bytes, cursor->index + 1) & 0x3F) << 12;
-    rune |= (ListAt(UInt8)(&cursor->string->bytes, cursor->index + 2) & 0x3F) << 6;
-    rune |= ListAt(UInt8)(&cursor->string->bytes, cursor->index + 3) & 0x3F;
+  else if ((*(ListAt(UInt8)(&cursor->string->bytes, cursor->index)) & 0xF8) == 0xF0) {
+    rune = (*ListAt(UInt8)(&cursor->string->bytes, cursor->index) & 0x07) << 18;
+    rune |= (*ListAt(UInt8)(&cursor->string->bytes, cursor->index + 1) & 0x3F) << 12;
+    rune |= (*ListAt(UInt8)(&cursor->string->bytes, cursor->index + 2) & 0x3F) << 6;
+    rune |= *ListAt(UInt8)(&cursor->string->bytes, cursor->index + 3) & 0x3F;
   }
 
-  return OptionSome(Rune)(rune);
+  return OptionSome(Ref(Rune))(&rune);
 }
 
 implement(
-  Cursor(Rune),
   StringCursor,
+  Cursor(Rune),
   .Next = (void*)StringCursorNext,
 );

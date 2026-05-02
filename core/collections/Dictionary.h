@@ -1,4 +1,20 @@
-#include <stdio.h>
+#ifndef Dictionary
+#include <core/Core.h>
+#include <core/Hash.h>
+
+#define Dictionary(Key, Value) GENERIC(Dictionary, Key, Value)
+#define DictionaryDefault(Key, Value) CONCAT(Dictionary(Key, Value), Default)
+#define DictionaryCreateWithCapacity(Key, Value) CONCAT(Dictionary(Key, Value), CreateWithCapacity)
+#define DictionaryCount(Key, Value) CONCAT(Dictionary(Key, Value), Count)
+#define DictionaryFindPosition(Key, Value) CONCAT(Dictionary(Key, Value), FindPosition)
+#define DictionaryInsert(Key, Value) CONCAT(Dictionary(Key, Value), Insert)
+#define DictionaryRehash(Key, Value) CONCAT(Dictionary(Key, Value), Rehash)
+#define DictionaryContainsKey(Key, Value) CONCAT(Dictionary(Key, Value), ContainsKey)
+#define DictionaryAt(Key, Value) CONCAT(Dictionary(Key, Value), At)
+#define DictionaryRemove(Key, Value) CONCAT(Dictionary(Key, Value), Remove)
+#define DictionaryDestroy(Key, Value) CONCAT(Dictionary(Key, Value), Destroy)
+#endif
+
 #ifndef DictionaryKey
 #error Type parameter 'DictionaryKey' is not defined.
 #endif
@@ -11,80 +27,76 @@
 #error Function 'Bool DictionaryKeyEqual(DictionaryKey const* left, DictionaryKey const* right)' is not defined.
 #endif
 
+#ifndef DictionaryKeyClone
+#define DictionaryKeyClone(value) (*(value))
+#endif
+
+#ifndef DictionaryKeyDestroy
+#define DictionaryKeyDestroy(value) ((void)(value))
+#endif
+
 #ifndef DictionaryValue
 #error Type parameter 'DictionaryValue' is not defined.
 #endif
 
-#include <core/Core.h>
-#include <core/Generic.h>
-#include <core/Hash.h>
+#ifndef DictionaryValueClone
+#define DictionaryValueClone(value) (*(value))
+#endif
 
-#ifndef DISABLE_Tuple_DictionaryKey_DictionaryValue
-#define TupleArgs 2
-#define TupleT0 DictionaryKey
-#define TupleT1 DictionaryValue
+#ifndef DictionaryValueDestroy
+#define DictionaryValueDestroy(value) ((void)(value))
+#endif
+
+#if defined DictionaryKey && defined DictionaryValue && defined DictionaryKeyHash && defined DictionaryKeyEqual
+#ifdef DICTIONARY_IMPLEMENTATION
+#define TUPLE_IMPLEMENTATION
+#endif
+#define TupleArgs DictionaryKey, DictionaryValue
+#define TupleT0Clone DictionaryKeyClone
+#define TupleT0Destroy DictionaryKeyDestroy
+#define TupleT1Clone DictionaryValueClone
+#define TupleT1Destroy DictionaryValueDestroy
 #include <core/Tuple.h>
-#endif
-#undef DISABLE_Tuple_DictionaryKey_DictionaryValue
 
-#ifndef DISABLE_Option_Tuple_DictionaryKey_DictionaryValue
+#ifdef DICTIONARY_IMPLEMENTATION
+#define OPTION_IMPLEMENTATION
+#endif
 #define OptionValue Tuple(DictionaryKey, DictionaryValue)
+#define OptionValueClone TupleClone(DictionaryKey, DictionaryValue)
+#define OptionValueDestroy TupleDestroy(DictionaryKey, DictionaryValue)
 #include <core/Option.h>
-#endif
-#undef DISABLE_Option_Tuple_DictionaryKey_DictionaryValue
 
-#ifndef DISABLE_Option_DictionaryValue
-#define OptionValue DictionaryValue
-#include <core/Option.h>
+#ifdef DICTIONARY_IMPLEMENTATION
+#define ARRAY_IMPLEMENTATION
 #endif
-#undef DISABLE_Option_DictionaryValue
-
-#ifndef DISABLE_Array_Option_Tuple_DictionaryKey_DictionaryValue
 #define ArrayElement Option(Tuple(DictionaryKey, DictionaryValue))
+#define ArrayElementClone OptionClone(Tuple(DictionaryKey, DictionaryValue))
+#define ArrayElementDestroy OptionDestroy(Tuple(DictionaryKey, DictionaryValue))
 #include <core/collections/Array.h>
-#endif
-#undef DISABLE_Array_Option_Tuple_DictionaryKey_DictionaryValue
 
-#ifndef DISABLE_Cursor_Tuple_DictionaryKey_DictionaryValue
-#define DISABLE_Option_CursorElement
-#define CursorElement Tuple(DictionaryKey, DictionaryValue)
-#include <core/collections/Cursor.h>
-#endif
-#undef DISABLE_Cursor_Tuple_DictionaryKey_DictionaryValue
-
-#ifndef Dictionary
-#define Dictionary(Key, Value) GENERIC2(Dictionary, Key, Value)
-#define DictionaryDefault(Key, Value) GENERIC2(DictionaryDefault, Key, Value)
-#define DictionaryCreateWithCapacity(Key, Value) GENERIC2(DictionaryCreateWithCapacity, Key, Value)
-#define DictionaryCount(Key, Value) GENERIC2(DictionaryCount, Key, Value)
-#define DictionaryFindPosition(Key, Value) GENERIC2(DictionaryFindPosition, Key, Value)
-#define DictionaryInsert(Key, Value) GENERIC2(DictionaryInsert, Key, Value)
-#define DictionaryRehash(Key, Value) GENERIC2(DictionaryRehash, Key, Value)
-#define DictionaryContainsKey(Key, Value) GENERIC2(DictionaryContains, Key, Value)
-#define DictionaryAt(Key, Value) GENERIC2(DictionaryAt, Key, Value)
-#define DictionaryRemove(Key, Value) GENERIC2(DictionaryRemoveAt, Key, Value)
-#define DictionaryDestroy(Key, Value) GENERIC2(DictionaryDestroy, Key, Value)
-#define DictionaryCursor(Key, Value) GENERIC2(DictionaryCursor, Key, Value)
-#define DictionaryCursorCreate(Key, Value) GENERIC2(DictionaryCursorCreate, Key, Value)
-#define DictionaryCursorNext(Key, Value) GENERIC2(DictionaryCursorNext, Key, Value)
-#endif
-
-typedef struct {
+typedef struct Dictionary(DictionaryKey, DictionaryValue) {
   Array(Option(Tuple(DictionaryKey, DictionaryValue))) entries;
   UInt count;
 } Dictionary(DictionaryKey, DictionaryValue);
 
+Dictionary(DictionaryKey, DictionaryValue) DictionaryDefault(DictionaryKey, DictionaryValue)();
+Dictionary(DictionaryKey, DictionaryValue) DictionaryCreateWithCapacity(DictionaryKey, DictionaryValue)(UInt capacity);
+UInt DictionaryCount(DictionaryKey, DictionaryValue)(Dictionary(DictionaryKey, DictionaryValue) const* dictionary);
+UInt DictionaryFindPosition(DictionaryKey, DictionaryValue)(Array(Option(Tuple(DictionaryKey, DictionaryValue))) const* entries, DictionaryKey key);
+
+#endif
+
 static Dictionary(DictionaryKey, DictionaryValue) DictionaryDefault(DictionaryKey, DictionaryValue)() {
   return (Dictionary(DictionaryKey, DictionaryValue)){
-    .entries = ArrayCreateWithCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(11),
-    .count = 0,
+    .entries = null,
+    .count   = 0,
   };
 }
 
 static Dictionary(DictionaryKey, DictionaryValue) DictionaryCreateWithCapacity(DictionaryKey, DictionaryValue)(UInt capacity) {
   return (Dictionary(DictionaryKey, DictionaryValue)){
     .entries = ArrayCreateWithCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(NextPrime(capacity)),
-    .count = 0,
+    .count   = 0,
   };
 }
 
@@ -96,14 +108,13 @@ static UInt DictionaryFindPosition(DictionaryKey, DictionaryValue)(
   Array(Option(Tuple(DictionaryKey, DictionaryValue))) const* entries,
   DictionaryKey key
 ) {
-  auto offset = (UInt)1;
+  auto offset   = (UInt)1;
   auto position = DictionaryKeyHash(&key) % ArrayCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(entries);
 
   for (
     auto entry = ArrayAt(Option(Tuple(DictionaryKey, DictionaryValue)))(entries, position);
     entry.tag == Option_Some && !DictionaryKeyEqual(&entry.value._0, &key);
-    entry = ArrayAt(Option(Tuple(DictionaryKey, DictionaryValue)))(entries, position)
-  ) {
+    entry = ArrayAt(Option(Tuple(DictionaryKey, DictionaryValue)))(entries, position)) {
     position += offset;
     offset += 2;
 
@@ -122,11 +133,11 @@ static Option(DictionaryValue) DictionaryInsert(DictionaryKey, DictionaryValue)(
   DictionaryKey key,
   DictionaryValue value
 ) {
-  auto position = DictionaryFindPosition(DictionaryKey, DictionaryValue)(&dictionary->entries, key);
+  auto position      = DictionaryFindPosition(DictionaryKey, DictionaryValue)(&dictionary->entries, key);
 
   auto previousValue = OptionNone(DictionaryValue)();
 
-  auto entry = ArrayAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
+  auto entry         = ArrayAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
   if (entry.tag == Option_Some) {
     previousValue = OptionSome(DictionaryValue)(entry.value._1);
   }
@@ -149,15 +160,10 @@ static Option(DictionaryValue) DictionaryInsert(DictionaryKey, DictionaryValue)(
   return previousValue;
 }
 
-static Option(DictionaryValue) DictionaryAt(DictionaryKey, DictionaryValue)(
-  Dictionary(DictionaryKey, DictionaryValue) const* dictionary,
-  DictionaryKey key
-);
-
 static void DictionaryRehash(DictionaryKey, DictionaryValue)(Dictionary(DictionaryKey, DictionaryValue) * dictionary) {
   auto oldEntries = dictionary->entries;
 
-  *dictionary = DictionaryCreateWithCapacity(DictionaryKey, DictionaryValue)(ArrayCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&oldEntries) * 2);
+  *dictionary     = DictionaryCreateWithCapacity(DictionaryKey, DictionaryValue)(ArrayCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&oldEntries) * 2);
 
   for (auto i = 0; i < ArrayCapacity(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries); ++i) {
     ArraySetAt(Option(Tuple(DictionaryKey, DictionaryValue)))(
@@ -177,6 +183,11 @@ static void DictionaryRehash(DictionaryKey, DictionaryValue)(Dictionary(Dictiona
   ArrayDestroy(Option(Tuple(DictionaryKey, DictionaryValue)))(oldEntries);
 }
 
+static Option(DictionaryValue) DictionaryAt(DictionaryKey, DictionaryValue)(
+  Dictionary(DictionaryKey, DictionaryValue) const* dictionary,
+  DictionaryKey key
+);
+
 static Bool DictionaryContainsKey(DictionaryKey, DictionaryValue)(
   Dictionary(DictionaryKey, DictionaryValue) const* dictionary,
   DictionaryKey key
@@ -190,7 +201,7 @@ static Option(DictionaryValue) DictionaryAt(DictionaryKey, DictionaryValue)(
   DictionaryKey key
 ) {
   auto position = DictionaryFindPosition(DictionaryKey, DictionaryValue)(&dictionary->entries, key);
-  auto entry = ArrayAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
+  auto entry    = ArrayAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
   return entry.tag == Option_Some ? OptionSome(DictionaryValue)(entry.value._1) : OptionNone(DictionaryValue)();
 }
 
@@ -199,7 +210,7 @@ static Option(Tuple(DictionaryKey, DictionaryValue)) DictionaryRemove(Dictionary
   DictionaryKey key
 ) {
   auto position = DictionaryFindPosition(DictionaryKey, DictionaryValue)(&dictionary->entries, key);
-  auto entry = ArrayAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
+  auto entry    = ArrayAt(Option(Tuple(DictionaryKey, DictionaryValue)))(&dictionary->entries, position);
 
   if (entry.tag == Option_Some) {
     ArraySetAt(Option(Tuple(DictionaryKey, DictionaryValue)))(
@@ -229,7 +240,7 @@ static DictionaryCursor(DictionaryKey, DictionaryValue) DictionaryCursorCreate(D
 ) {
   return (DictionaryCursor(DictionaryKey, DictionaryValue)){
     .dictionary = dictionary,
-    .index = 0,
+    .index      = 0,
   };
 }
 
