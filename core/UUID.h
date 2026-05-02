@@ -10,6 +10,8 @@ typedef struct {
 UUID UUIDDefault();
 UUID UUIDCreateV4();
 UUID UUIDCreateV7();
-String UUIDToString(UUID const* uuid, Bool uppercase);
+UInt UUIDVersion(UUID const* uuid);
+UInt UUIDVariant(UUID const* uuid);
+String UUIDToString(UUID const* uuid, Bool isUppercase);
 Bool UUIDEqual(UUID const* left, UUID const* right);
 UInt UUIDHash(UUID const* uuid);

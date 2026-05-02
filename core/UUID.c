@@ -12,6 +12,13 @@
 #include <unistd.h>
 #endif
 
+#define VERSION_MASK 0xF0
+#define VERSION_4 0x40
+#define VERSION_7 0x70
+
+#define VARIANT_MASK 0xC0
+#define VARIANT_VALUE 0x80
+
 static UInt64 GetCurrentTimeMs() {
 #ifdef _WIN32
   auto fs = (FILETIME){};
@@ -46,8 +53,8 @@ UUID UUIDCreateV4() {
 
   GetRandomBytes((UInt8*)&uuid.bytes, 16);
 
-  uuid.bytes[6] = (uuid.bytes[6] & 0x0F) | 0x40; // Set version to 4
-  uuid.bytes[8] = (uuid.bytes[8] & 0x3F) | 0x80; // Set variant to 2
+  uuid.bytes[6] = (uuid.bytes[6] & ~VERSION_MASK) | VERSION_4; // Set version to 4
+  uuid.bytes[8] = (uuid.bytes[8] & ~VARIANT_MASK) | VARIANT_VALUE; // Set variant
 
   return uuid;
 }
@@ -57,24 +64,24 @@ UUID UUIDCreateV7() {
 
   // First 48 bits: Unix timestamp in milliseconds
   auto timestamp = GetCurrentTimeMs();
-  uuid.bytes[0]  = (UInt8)((timestamp >> 40) & 0xFF);
-  uuid.bytes[1]  = (UInt8)((timestamp >> 32) & 0xFF);
-  uuid.bytes[2]  = (UInt8)((timestamp >> 24) & 0xFF);
-  uuid.bytes[3]  = (UInt8)((timestamp >> 16) & 0xFF);
-  uuid.bytes[4]  = (UInt8)((timestamp >> 8) & 0xFF);
-  uuid.bytes[5]  = (UInt8)(timestamp & 0xFF);
+  uuid.bytes[0] = (UInt8)((timestamp >> 40) & 0xFF);
+  uuid.bytes[1] = (UInt8)((timestamp >> 32) & 0xFF);
+  uuid.bytes[2] = (UInt8)((timestamp >> 24) & 0xFF);
+  uuid.bytes[3] = (UInt8)((timestamp >> 16) & 0xFF);
+  uuid.bytes[4] = (UInt8)((timestamp >> 8) & 0xFF);
+  uuid.bytes[5] = (UInt8)(timestamp & 0xFF);
 
   GetRandomBytes((UInt8*)&uuid.bytes[6], 10);
 
-  uuid.bytes[6] = (uuid.bytes[6] & 0x0F) | 0x70; // Set version to 7
-  uuid.bytes[8] = (uuid.bytes[8] & 0x3F) | 0x80; // Set variant to 2
+  uuid.bytes[6] = (uuid.bytes[6] & ~VERSION_MASK) | VERSION_7; // Set version to 7
+  uuid.bytes[8] = (uuid.bytes[8] & ~VARIANT_MASK) | VARIANT_VALUE; // Set variant
 
   return uuid;
 }
 
-String UUIDToString(UUID const* uuid, Bool uppercase) {
+String UUIDToString(UUID const* uuid, Bool isUppercase) {
   auto buffer = (char[37]){};
-  auto format = uppercase
+  auto format = isUppercase
                   ? "%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X"
                   : "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x";
 
@@ -84,6 +91,14 @@ String UUIDToString(UUID const* uuid, Bool uppercase) {
     uuid->bytes[10], uuid->bytes[11], uuid->bytes[12], uuid->bytes[13], uuid->bytes[14], uuid->bytes[15]);
 
   return StringCreate(buffer);
+}
+
+UInt UUIDVersion(UUID const* uuid) {
+  return (uuid->bytes[6] & VERSION_MASK) >> 4;
+}
+
+UInt UUIDVariant(UUID const* uuid) {
+  return (uuid->bytes[8] & VARIANT_MASK) >> 6;
 }
 
 Bool UUIDEqual(UUID const* left, UUID const* right) {
