@@ -156,7 +156,7 @@ void ListAppend(ListElement)(List(ListElement) * list, ListElement value) {
     ArrayResize(ListElement)(&list->elements, ArrayCapacity(ListElement)(&list->elements) * 2 + 8);
   }
 
-  *ArrayAtMut(ListElement)(list, list->count) = value;
+  *ArrayAtMut(ListElement)(&list->elements, list->count) = value;
   ++list->count;
 }
 

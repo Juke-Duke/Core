@@ -5,7 +5,7 @@
 #ifndef Cursor
 #include <core/Core.h>
 
-#define each(element, Cursor, sequence) (auto __each_flag = true; __each_flag;) for (auto cursor = CONCAT(Cursor, Create)(sequence); __each_flag; (CONCAT(Cursor, Destroy)(&cursor), __each_flag = false)) for (auto element = CONCAT(Cursor, Next)(&cursor); element.tag == Option_Some; element = CONCAT(Cursor, Next)(&cursor))
+#define each(element, Cursor, sequence) (auto __each_flag = true; __each_flag;) for (auto cursor = CONCAT(Cursor, Create)(sequence); __each_flag; (CONCAT(Cursor, Destroy)(&cursor), __each_flag = false)) for (auto __next = CONCAT(Cursor, Next)(&cursor); __next.tag == Option_Some; __next = CONCAT(Cursor, Next)(&cursor)) for (auto __value_flag = true; __value_flag;) for (auto element = __next.value; __value_flag; __value_flag = false)
 
 #define Cursor(CursorElement) GENERIC(Cursor, CursorElement)
 #define CursorNext(CursorElement) CONCAT(Cursor(CursorElement), Next)
