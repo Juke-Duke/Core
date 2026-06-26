@@ -1,21 +1,5 @@
-#ifndef Option
-#include <core/Core.h>
-
-typedef enum : UInt8 {
-  Option_None,
-  Option_Some,
-} OptionTag;
-
-#define Option(OptionValue) GENERIC(Option, OptionValue)
-#define OptionNone(OptionValue) CONCAT(Option(OptionValue), None)
-#define OptionSome(OptionValue) CONCAT(Option(OptionValue), Some)
-#define OptionDefault(OptionValue) CONCAT(Option(OptionValue), Default)
-#define OptionClone(OptionValue) CONCAT(Option(OptionValue), Clone)
-#define OptionDestroy(OptionValue) CONCAT(Option(OptionValue), Destroy)
-#endif
-
 #ifndef OptionValue
-#error Type parameter 'OptionValue' is not defined.
+#error Type parameter 'OptionValue' is not defined
 #endif
 
 #ifndef OptionValueClone
@@ -26,56 +10,64 @@ typedef enum : UInt8 {
 #define OptionValueDestroy(value) ((void)(value))
 #endif
 
-#ifdef OptionValue
-typedef struct Option(OptionValue) {
-  OptionTag tag;
-  OptionValue value;
-} Option(OptionValue);
+#ifndef Option
+#include <core/Core.h>
 
-Option(OptionValue) OptionNone(OptionValue)();
-Option(OptionValue) OptionSome(OptionValue)(OptionValue value);
+#define Option(OptionValue) GENERIC(Option, OptionValue)
+#define OptionNone(OptionValue) CONCAT(Option(OptionValue), None)
+#define OptionSome(OptionValue) CONCAT(Option(OptionValue), Some)
+#define OptionDefault(OptionValue) CONCAT(Option(OptionValue), Default)
+#define OptionClone(OptionValue) CONCAT(Option(OptionValue), Clone)
+#define OptionDestroy(OptionValue) CONCAT(Option(OptionValue), Destroy)
+#endif
+
+#ifdef OptionValue
+typedef struct Option(OptionValue) union(
+  Option,
+  (OptionSome, OptionValue),
+  (OptionNone)
+) Option(OptionValue);
+
+VARIANT_CREATE_DECL(Option(OptionValue), OptionSome(OptionValue), (OptionSome, OptionValue));
+VARIANT_CREATE_DECL(Option(OptionValue), OptionNone(OptionValue), (OptionNone));
 Option(OptionValue) OptionDefault(OptionValue)();
 Option(OptionValue) OptionClone(OptionValue)(Option(OptionValue) const* option);
-void OptionDestroy(OptionValue)(Option(OptionValue) * option);
+Unit OptionDestroy(OptionValue)(Option(OptionValue) * option);
 
 #ifdef OPTION_IMPLEMENTATION
-Option(OptionValue) OptionNone(OptionValue)() {
-  return (Option(OptionValue)){
-    .tag   = Option_None,
-    .value = {},
-  };
-}
+COREAPI VARIANT_CREATE_IMPL(Option(OptionValue), OptionSome(OptionValue), (OptionSome, OptionValue));
+COREAPI VARIANT_CREATE_IMPL(Option(OptionValue), OptionNone(OptionValue), (OptionNone));
 
-Option(OptionValue) OptionSome(OptionValue)(OptionValue value) {
-  return (Option(OptionValue)){
-    .tag   = Option_Some,
-    .value = value,
-  };
-}
-
-Option(OptionValue) OptionDefault(OptionValue)() {
+COREAPI Option(OptionValue) OptionDefault(OptionValue)() {
   return OptionNone(OptionValue)();
 }
 
-Option(OptionValue) OptionClone(OptionValue)(Option(OptionValue) const* option) {
-  switch (option->tag) {
-    case Option_None: return OptionNone(OptionValue)();
-    case Option_Some: return OptionSome(OptionValue)(OptionValueClone(&option->value));
+COREAPI Option(OptionValue) OptionClone(OptionValue)(Option(OptionValue) const* option) {
+  match(option) {
+    case(OptionSome, value) {
+      return OptionSome(OptionValue)(OptionValueClone(value));
+    }
+    case(OptionNone) {
+      return OptionNone(OptionValue)();
+    }
   }
 }
 
-void OptionDestroy(OptionValue)(Option(OptionValue) * option) {
-  if (option->tag == Option_Some) {
-    OptionValueDestroy(&option->value);
+COREAPI Unit OptionDestroy(OptionValue)(Option(OptionValue) * option) {
+  match(option) {
+    case(OptionSome, value) {
+      OptionValueDestroy(value);
+    }
+    default: break;
   }
 
-  option->tag   = Option_None;
-  option->value = (OptionValue){};
+  *option = OptionNone(OptionValue)();
+  return_unit;
 }
 #endif // OPTION_IMPLEMENTATION
 #endif // OptionValue
 
+#undef OPTION_IMPLEMENTATION
 #undef OptionValue
 #undef OptionValueClone
 #undef OptionValueDestroy
-#undef OPTION_IMPLEMENTATION

@@ -2,8 +2,6 @@
 
 #include <core/Core.h>
 
-typedef interface(Any
-) Any;
+typedef struct interface() Any;
 
-Any* AnyClone(Any const* any);
-void AnyDestroy(Any* any);
+DISPATCH_DECL(Any, Unit, Destroy, *);

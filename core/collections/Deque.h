@@ -1,5 +1,5 @@
 #ifndef DequeElement
-#error Type parameter 'DequeElement' is not defined.
+#error Type parameter 'DequeElement' is not defined
 #endif
 
 #ifndef DequeElementDefault
@@ -37,38 +37,18 @@
 #endif
 
 #ifdef DequeElement
-#if defined DEQUE_IMPLEMENTATION && !defined DISABLE_ARRAY_DequeElement_IMPLEMENTATION
-#define ARRAY_IMPLEMENTATION
-#define DISABLE_OPTION_REF_ArrayElement_IMPLEMENTATION
-#define DISABLE_CURSOR_ArrayElement_IMPLEMENTATION
-#endif
 #define ArrayElement DequeElement
-#define ArrayElementDefault DequeElementDefault
-#define ArrayElementClone DequeElementClone
-#define ArrayElementDestroy DequeElementDestroy
 #include <core/collections/Array.h>
 
-#if defined DEQUE_IMPLEMENTATION && !defined DISABLE_OPTION_DequeElement_IMPLEMENTATION
-#define OPTION_IMPLEMENTATION
-#endif
 #define OptionValue DequeElement
-#define OptionValueClone DequeElementClone
-#define OptionValueDestroy DequeElementDestroy
 #include <core/Option.h>
 
 #define RefT DequeElement
 #include <core/Ref.h>
 
-#if defined DEQUE_IMPLEMENTATION && !defined DISABLE_OPTION_REF_DequeElement_IMPLEMENTATION
-#define OPTION_IMPLEMENTATION
-#endif
 #define OptionValue Ref(DequeElement)
 #include <core/Option.h>
 
-#if defined DEQUE_IMPLEMENTATION && !defined DISABLE_Cursor_DequeElement_IMPLEMENTATION
-#define CURSOR_IMPLEMENTATION
-#define DISABLE_OPTION_REF_CursorElement_IMPLEMENTATION
-#endif
 #define CursorElement DequeElement
 #include <core/collections/Cursor.h>
 
@@ -82,20 +62,26 @@ Deque(DequeElement) DequeDefault(DequeElement)();
 UInt DequeCount(DequeElement)(Deque(DequeElement) * deque);
 Option(Ref(DequeElement)) DequeFront(DequeElement)(Deque(DequeElement) * deque);
 Option(Ref(DequeElement)) DequeBack(DequeElement)(Deque(DequeElement) * deque);
-void DequeQueueFront(DequeElement)(Deque(DequeElement) * deque, DequeElement element);
-void DequeQueueBack(DequeElement)(Deque(DequeElement) * deque, DequeElement element);
+Unit DequeQueueFront(DequeElement)(Deque(DequeElement) * deque, DequeElement element);
+Unit DequeQueueBack(DequeElement)(Deque(DequeElement) * deque, DequeElement element);
 Option(DequeElement) DequeDequeueFront(DequeElement)(Deque(DequeElement) * deque);
 Option(DequeElement) DequeDequeueBack(DequeElement)(Deque(DequeElement) * deque);
 Deque(DequeElement) DequeClone(DequeElement)(Deque(DequeElement) const* deque);
-void DequeDestroy(DequeElement)(Deque(DequeElement) * deque);
+Unit DequeDestroy(DequeElement)(Deque(DequeElement) * deque);
 
 typedef struct DequeCursor(DequeElement) {
   Deque(DequeElement) const* deque;
   UInt index;
 } DequeCursor(DequeElement);
 
+DequeCursor(DequeElement) DequeCursorCreate(DequeElement)(Deque(DequeElement) const* deque);
+Option(Ref(DequeElement)) DequeCursorNext(DequeElement)(DequeCursor(DequeElement) * cursor);
+DequeCursor(DequeElement) DequeCursorClone(DequeElement)(DequeCursor(DequeElement) const* cursor);
+Unit DequeCursorDestroy(DequeElement)(DequeCursor(DequeElement) * cursor);
+IMPLEMENT_SIG(DequeCursor(DequeElement), Cursor(DequeElement));
+
 #ifdef DEQUE_IMPLEMENTATION
-Deque(DequeElement) DequeDefault(DequeElement)() {
+COREAPI Deque(DequeElement) DequeDefault(DequeElement)() {
   return (Deque(DequeElement)){
     .ring  = ArrayDefault(DequeElement)(),
     .front = 0,
@@ -103,23 +89,24 @@ Deque(DequeElement) DequeDefault(DequeElement)() {
   };
 }
 
-UInt DequeCount(DequeElement)(Deque(DequeElement) * deque) {
+COREAPI UInt DequeCount(DequeElement)(Deque(DequeElement) * deque) {
   return deque->count;
 }
 
-static void CONCAT(Deque(DequeElement), Resize)(Deque(DequeElement) * deque) {
+static Unit CONCAT(Deque(DequeElement), Resize)(Deque(DequeElement) * deque) {
   auto oldRing = deque->ring;
   deque->ring  = ArrayCreateWithCapacity(DequeElement)(ArrayCapacity(DequeElement)(&oldRing) * 2 + 8);
 
-  for (auto i = 0; i < deque->count; ++i) {
+  for (auto i = (UInt)0; i < deque->count; ++i) {
     *ArrayAtMut(DequeElement)(&deque->ring, i) = *ArrayAt(DequeElement)(&oldRing, (deque->front + i) % ArrayCapacity(DequeElement)(&oldRing));
   }
 
   ArrayDestroy(DequeElement)(&oldRing);
   deque->front = 0;
+  return_unit;
 }
 
-Option(Ref(DequeElement)) DequeFront(DequeElement)(Deque(DequeElement) * deque) {
+COREAPI Option(Ref(DequeElement)) DequeFront(DequeElement)(Deque(DequeElement) * deque) {
   if (deque->count == 0) {
     return OptionNone(Ref(DequeElement))();
   }
@@ -127,7 +114,7 @@ Option(Ref(DequeElement)) DequeFront(DequeElement)(Deque(DequeElement) * deque) 
   return OptionSome(Ref(DequeElement))(ArrayAt(DequeElement)(&deque->ring, deque->front));
 }
 
-Option(Ref(DequeElement)) DequeBack(DequeElement)(Deque(DequeElement) * deque) {
+COREAPI Option(Ref(DequeElement)) DequeBack(DequeElement)(Deque(DequeElement) * deque) {
   if (deque->count == 0) {
     return OptionNone(Ref(DequeElement))();
   }
@@ -137,7 +124,7 @@ Option(Ref(DequeElement)) DequeBack(DequeElement)(Deque(DequeElement) * deque) {
   );
 }
 
-void DequeQueueFront(DequeElement)(Deque(DequeElement) * deque, DequeElement element) {
+COREAPI Unit DequeQueueFront(DequeElement)(Deque(DequeElement) * deque, DequeElement element) {
   if (deque->count == ArrayCapacity(DequeElement)(&deque->ring)) {
     CONCAT(Deque(DequeElement), Resize)(deque);
   }
@@ -145,9 +132,10 @@ void DequeQueueFront(DequeElement)(Deque(DequeElement) * deque, DequeElement ele
   deque->front                                          = (deque->front - 1 + ArrayCapacity(DequeElement)(&deque->ring)) % ArrayCapacity(DequeElement)(&deque->ring);
   *ArrayAtMut(DequeElement)(&deque->ring, deque->front) = DequeElementClone(&element);
   ++deque->count;
+  return_unit;
 }
 
-void DequeQueueBack(DequeElement)(Deque(DequeElement) * deque, DequeElement element) {
+COREAPI Unit DequeQueueBack(DequeElement)(Deque(DequeElement) * deque, DequeElement element) {
   if (deque->count == ArrayCapacity(DequeElement)(&deque->ring)) {
     CONCAT(Deque(DequeElement), Resize)(deque);
   }
@@ -155,9 +143,10 @@ void DequeQueueBack(DequeElement)(Deque(DequeElement) * deque, DequeElement elem
   auto back                                     = (deque->front + deque->count) % ArrayCapacity(DequeElement)(&deque->ring);
   *ArrayAtMut(DequeElement)(&deque->ring, back) = DequeElementClone(&element);
   ++deque->count;
+  return_unit;
 }
 
-Option(DequeElement) DequeDequeueFront(DequeElement)(Deque(DequeElement) * deque) {
+COREAPI Option(DequeElement) DequeDequeueFront(DequeElement)(Deque(DequeElement) * deque) {
   if (deque->count == 0) {
     return OptionNone(DequeElement)();
   }
@@ -169,7 +158,7 @@ Option(DequeElement) DequeDequeueFront(DequeElement)(Deque(DequeElement) * deque
   return OptionSome(DequeElement)(element);
 }
 
-Option(DequeElement) DequeDequeueBack(DequeElement)(Deque(DequeElement) * deque) {
+COREAPI Option(DequeElement) DequeDequeueBack(DequeElement)(Deque(DequeElement) * deque) {
   if (deque->count == 0) {
     return OptionNone(DequeElement)();
   }
@@ -181,7 +170,7 @@ Option(DequeElement) DequeDequeueBack(DequeElement)(Deque(DequeElement) * deque)
   return OptionSome(DequeElement)(element);
 }
 
-Deque(DequeElement) DequeClone(DequeElement)(Deque(DequeElement) const* deque) {
+COREAPI Deque(DequeElement) DequeClone(DequeElement)(Deque(DequeElement) const* deque) {
   return (Deque(DequeElement)){
     .ring  = ArrayClone(DequeElement)(&deque->ring),
     .front = deque->front,
@@ -189,20 +178,21 @@ Deque(DequeElement) DequeClone(DequeElement)(Deque(DequeElement) const* deque) {
   };
 }
 
-void DequeDestroy(DequeElement)(Deque(DequeElement) * deque) {
+COREAPI Unit DequeDestroy(DequeElement)(Deque(DequeElement) * deque) {
   ArrayDestroy(DequeElement)(&deque->ring);
   deque->front = 0;
   deque->count = 0;
+  return_unit;
 }
 
-DequeCursor(DequeElement) DequeCursorCreate(DequeElement)(Deque(DequeElement) const* deque) {
+COREAPI DequeCursor(DequeElement) DequeCursorCreate(DequeElement)(Deque(DequeElement) const* deque) {
   return (DequeCursor(DequeElement)){
     .deque = deque,
     .index = 0,
   };
 }
 
-Option(Ref(DequeElement)) DequeCursorNext(DequeElement)(DequeCursor(DequeElement) * cursor) {
+COREAPI Option(Ref(DequeElement)) DequeCursorNext(DequeElement)(DequeCursor(DequeElement) * cursor) {
   if (cursor->index >= cursor->deque->count) {
     return OptionNone(Ref(DequeElement))();
   }
@@ -212,26 +202,30 @@ Option(Ref(DequeElement)) DequeCursorNext(DequeElement)(DequeCursor(DequeElement
   return OptionSome(Ref(DequeElement))(element);
 }
 
-DequeCursor(DequeElement) DequeCursorClone(DequeElement)(DequeCursor(DequeElement) const* cursor) {
+COREAPI DequeCursor(DequeElement) DequeCursorClone(DequeElement)(DequeCursor(DequeElement) const* cursor) {
   return (DequeCursor(DequeElement)){
     .deque = cursor->deque,
     .index = cursor->index,
   };
 }
 
-void DequeCursorDestroy(DequeElement)(DequeCursor(DequeElement) * cursor) {
+COREAPI Unit DequeCursorDestroy(DequeElement)(DequeCursor(DequeElement) * cursor) {
   cursor->index = 0;
+  return_unit;
 }
 
-implement(
+COREAPI IMPLEMENT(
+
   DequeCursor(DequeElement),
   Cursor(DequeElement),
-  .Next = (void*)DequeCursorNext(DequeElement),
+  .Next    = (void*)DequeCursorNext(DequeElement),
+  .Destroy = (void*)DequeCursorDestroy(DequeElement),
 );
 #endif // DEQUE_IMPLEMENTATION
 #endif // DequeElement
 
+#undef DEQUE_IMPLEMENTATION
 #undef DequeElement
+#undef DequeElementDefault
 #undef DequeElementClone
 #undef DequeElementDestroy
-#undef DEQUE_IMPLEMENTATION

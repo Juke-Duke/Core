@@ -1,5 +1,5 @@
 #ifndef ArrayElement
-#error Type parameter 'ArrayElement' is not defined.
+#error Type parameter 'ArrayElement' is not defined
 #endif
 
 #ifndef ArrayElementDefault
@@ -34,24 +34,18 @@
 #define ArrayCursorNext(ArrayElement) CONCAT(ArrayCursor(ArrayElement), Next)
 #define ArrayCursorClone(ArrayElement) CONCAT(ArrayCursor(ArrayElement), Clone)
 #define ArrayCursorDestroy(ArrayElement) CONCAT(ArrayCursor(ArrayElement), Destroy)
+#define ArrayCursorAsCursor(ArrayElement) CONCAT(ArrayCursor(ArrayElement), As, Cursor(Ref(ArrayElement)))
 #endif
 
 #ifdef ArrayElement
 #define RefT ArrayElement
 #include <core/Ref.h>
 
-#if defined ARRAY_IMPLEMENTATION && !defined DISABLE_OPTION_REF_ArrayElement_IMPLEMENTATION
-#define OPTION_IMPLEMENTATION
-#endif
 #define OptionValue Ref(ArrayElement)
 #include <core/Option.h>
 
-#if defined ARRAY_IMPLEMENTATION && !defined DISABLE_CURSOR_ArrayElement_IMPLEMENTATION
-#define CURSOR_IMPLEMENTATION
-#define DISABLE_OPTION_REF_CursorElement_IMPLEMENTATION
-#endif
-#define CursorElement ArrayElement
-#include <core/collections/Cursor.h>
+#define CursorElement Ref(ArrayElement)
+#include <core/collections/cursors/Cursor.h>
 
 typedef struct Array(ArrayElement) {
   ArrayElement* elements;
@@ -59,15 +53,15 @@ typedef struct Array(ArrayElement) {
 } Array(ArrayElement);
 
 Array(ArrayElement) ArrayDefault(ArrayElement)();
-Array(ArrayElement) ArrayCreate(ArrayElement)(ArrayElement const* elements, UInt count);
+Array(ArrayElement) ArrayCreate(ArrayElement)(ArrayElement const elements[], UInt count);
 Array(ArrayElement) ArrayCreateFill(ArrayElement)(ArrayElement value, UInt count);
 Array(ArrayElement) ArrayCreateWithCapacity(ArrayElement)(UInt capacity);
 UInt ArrayCapacity(ArrayElement)(Array(ArrayElement) const* array);
-void ArrayResize(ArrayElement)(Array(ArrayElement) * array, UInt capacity);
+Unit ArrayResize(ArrayElement)(Array(ArrayElement) * array, UInt capacity);
 ArrayElement const* ArrayAt(ArrayElement)(Array(ArrayElement) const* array, UInt index);
 ArrayElement* ArrayAtMut(ArrayElement)(Array(ArrayElement) * array, UInt index);
 Array(ArrayElement) ArrayClone(ArrayElement)(Array(ArrayElement) const* array);
-void ArrayDestroy(ArrayElement)(Array(ArrayElement) * array);
+Unit ArrayDestroy(ArrayElement)(Array(ArrayElement) * array);
 
 typedef struct ArrayCursor(ArrayElement) {
   Array(ArrayElement) const* array;
@@ -77,20 +71,21 @@ typedef struct ArrayCursor(ArrayElement) {
 ArrayCursor(ArrayElement) ArrayCursorCreate(ArrayElement)(Array(ArrayElement) const* array);
 Option(Ref(ArrayElement)) ArrayCursorNext(ArrayElement)(ArrayCursor(ArrayElement) * cursor);
 ArrayCursor(ArrayElement) ArrayCursorClone(ArrayElement)(ArrayCursor(ArrayElement) const* cursor);
-void ArrayCursorDestroy(ArrayElement)(ArrayCursor(ArrayElement) * cursor);
+Unit ArrayCursorDestroy(ArrayElement)(ArrayCursor(ArrayElement) * cursor);
+IMPLEMENT_SIG(ArrayCursor(ArrayElement), Cursor(Ref(ArrayElement)));
 
 #ifdef ARRAY_IMPLEMENTATION
 #include <core/Debug.h>
 #include <stdlib.h>
 
-Array(ArrayElement) ArrayDefault(ArrayElement)() {
+COREAPI Array(ArrayElement) ArrayDefault(ArrayElement)() {
   return (Array(ArrayElement)){
     .elements = null,
     .capacity = 0,
   };
 }
 
-Array(ArrayElement) ArrayCreate(ArrayElement)(ArrayElement const elements[], UInt count) {
+COREAPI Array(ArrayElement) ArrayCreate(ArrayElement)(ArrayElement const elements[], UInt count) {
   if (count == 0) {
     return ArrayDefault(ArrayElement)();
   }
@@ -110,7 +105,7 @@ Array(ArrayElement) ArrayCreate(ArrayElement)(ArrayElement const elements[], UIn
   };
 }
 
-Array(ArrayElement) ArrayCreateFill(ArrayElement)(ArrayElement value, UInt count) {
+COREAPI Array(ArrayElement) ArrayCreateFill(ArrayElement)(ArrayElement value, UInt count) {
   if (count == 0) {
     return ArrayDefault(ArrayElement)();
   }
@@ -134,7 +129,7 @@ Array(ArrayElement) ArrayCreateFill(ArrayElement)(ArrayElement value, UInt count
   };
 }
 
-Array(ArrayElement) ArrayCreateWithCapacity(ArrayElement)(UInt capacity) {
+COREAPI Array(ArrayElement) ArrayCreateWithCapacity(ArrayElement)(UInt capacity) {
   if (capacity == 0) {
     return ArrayDefault(ArrayElement)();
   }
@@ -154,14 +149,14 @@ Array(ArrayElement) ArrayCreateWithCapacity(ArrayElement)(UInt capacity) {
   };
 }
 
-UInt ArrayCapacity(ArrayElement)(Array(ArrayElement) const* array) {
+COREAPI UInt ArrayCapacity(ArrayElement)(Array(ArrayElement) const* array) {
   return array->capacity;
 }
 
-void ArrayResize(ArrayElement)(Array(ArrayElement) * array, UInt capacity) {
+COREAPI Unit ArrayResize(ArrayElement)(Array(ArrayElement) * array, UInt capacity) {
   if (capacity == 0) {
     ArrayDestroy(ArrayElement)(array);
-    return;
+    return_unit;
   }
 
   auto resized = (ArrayElement*)realloc(array->elements, sizeof(ArrayElement) * capacity);
@@ -177,9 +172,11 @@ void ArrayResize(ArrayElement)(Array(ArrayElement) * array, UInt capacity) {
 
   array->elements = resized;
   array->capacity = capacity;
+
+  return_unit;
 }
 
-ArrayElement const* ArrayAt(ArrayElement)(Array(ArrayElement) const* array, UInt index) {
+COREAPI ArrayElement const* ArrayAt(ArrayElement)(Array(ArrayElement) const* array, UInt index) {
 #ifndef DISABLE_BOUNDS_CHECK
   if (index >= array->capacity) {
     Error("Index out of bounds.");
@@ -189,7 +186,7 @@ ArrayElement const* ArrayAt(ArrayElement)(Array(ArrayElement) const* array, UInt
   return &array->elements[index];
 }
 
-ArrayElement* ArrayAtMut(ArrayElement)(Array(ArrayElement) * array, UInt index) {
+COREAPI ArrayElement* ArrayAtMut(ArrayElement)(Array(ArrayElement) * array, UInt index) {
 #ifndef DISABLE_BOUNDS_CHECK
   if (index >= array->capacity) {
     Error("Index out of bounds.");
@@ -199,7 +196,7 @@ ArrayElement* ArrayAtMut(ArrayElement)(Array(ArrayElement) * array, UInt index) 
   return &array->elements[index];
 }
 
-Array(ArrayElement) ArrayClone(ArrayElement)(Array(ArrayElement) const* array) {
+COREAPI Array(ArrayElement) ArrayClone(ArrayElement)(Array(ArrayElement) const* array) {
   auto clone = ArrayCreateWithCapacity(ArrayElement)(array->capacity);
 
   for (auto i = (UInt)0; i < array->capacity; ++i) {
@@ -209,7 +206,7 @@ Array(ArrayElement) ArrayClone(ArrayElement)(Array(ArrayElement) const* array) {
   return clone;
 }
 
-void ArrayDestroy(ArrayElement)(Array(ArrayElement) * array) {
+COREAPI Unit ArrayDestroy(ArrayElement)(Array(ArrayElement) * array) {
   for (auto i = (UInt)0; i < array->capacity; ++i) {
     ArrayElementDestroy(&array->elements[i]);
   }
@@ -217,16 +214,17 @@ void ArrayDestroy(ArrayElement)(Array(ArrayElement) * array) {
   free(array->elements);
   array->elements = null;
   array->capacity = 0;
+  return_unit;
 }
 
-ArrayCursor(ArrayElement) ArrayCursorCreate(ArrayElement)(Array(ArrayElement) const* array) {
+COREAPI ArrayCursor(ArrayElement) ArrayCursorCreate(ArrayElement)(Array(ArrayElement) const* array) {
   return (ArrayCursor(ArrayElement)){
     .array = array,
     .index = 0,
   };
 }
 
-Option(Ref(ArrayElement)) ArrayCursorNext(ArrayElement)(ArrayCursor(ArrayElement) * cursor) {
+COREAPI Option(Ref(ArrayElement)) ArrayCursorNext(ArrayElement)(ArrayCursor(ArrayElement) * cursor) {
   if (cursor->index >= ArrayCapacity(ArrayElement)(cursor->array)) {
     return OptionNone(Ref(ArrayElement))();
   }
@@ -234,27 +232,30 @@ Option(Ref(ArrayElement)) ArrayCursorNext(ArrayElement)(ArrayCursor(ArrayElement
   return OptionSome(Ref(ArrayElement))(ArrayAt(ArrayElement)(cursor->array, cursor->index++));
 }
 
-ArrayCursor(ArrayElement) ArrayCursorClone(ArrayElement)(ArrayCursor(ArrayElement) const* cursor) {
+COREAPI ArrayCursor(ArrayElement) ArrayCursorClone(ArrayElement)(ArrayCursor(ArrayElement) const* cursor) {
   return (ArrayCursor(ArrayElement)){
     .array = cursor->array,
     .index = cursor->index,
   };
 }
 
-void ArrayCursorDestroy(ArrayElement)(ArrayCursor(ArrayElement) * cursor) {
+COREAPI Unit ArrayCursorDestroy(ArrayElement)(ArrayCursor(ArrayElement) * cursor) {
   cursor->index = 0;
+  return_unit;
 }
 
-implement(
+COREAPI IMPLEMENT(
   ArrayCursor(ArrayElement),
-  Cursor(ArrayElement),
-  .Next = (void*)ArrayCursorNext(ArrayElement),
+  Cursor(Ref(ArrayElement)),
+  .Next    = (void*)ArrayCursorNext(ArrayElement),
+  .Destroy = (void*)ArrayCursorDestroy(ArrayElement),
 );
 #endif // ARRAY_IMPLEMENTATION
 #endif // ArrayElement
 
+#undef ARRAY_IMPLEMENTATION
 #undef ArrayElement
+#undef ArrayElementDefault
 #undef ArrayElementClone
 #undef ArrayElementDestroy
-#undef ARRAY_IMPLEMENTATION
 #undef DISABLE_BOUNDS_CHECK

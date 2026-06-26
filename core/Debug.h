@@ -3,6 +3,7 @@
 #include <core/Core.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #if defined __APPLE__ || defined __linux__ || defined __unix__
 #include <dlfcn.h>

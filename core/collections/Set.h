@@ -1,96 +1,159 @@
 #ifndef SetElement
-#error Type parameter 'SetElement' is not defined.
+#error Type parameter 'SetElement' is not defined
 #endif
 
 #ifndef SetElementHash
-#error Function 'UInt32 SetElementHash(SetElement const* value)' is not defined.
+#error Function 'UInt SetElementHash(SetElement const* value)' is not defined
 #endif
 
 #ifndef SetElementEqual
-#error Function 'Bool SetElementEqual(SetElement const* left, SetElement const* right)' is not defined.
+#error Function 'Bool SetElementEqual(SetElement const* left, SetElement const* right)' is not defined
+#endif
+
+#ifndef SetElementClone
+#define SetElementClone(value) (*(value))
+#endif
+
+#ifndef SetElementDestroy
+#define SetElementDestroy(value) ((void)(value))
 #endif
 
 #ifndef Set
-#include <core/Generic.h>
-#define Set(SetElement) GENERIC(Set, SetElement)
-#define SetDefault(SetElement) GENERIC(SetDefault, SetElement)
-#define SetCreateWithCapacity(SetElement) GENERIC(SetCreateWithCapacity, SetElement)
-#define SetCount(SetElement) GENERIC(SetCount, SetElement)
-#define SetInsert(SetElement) GENERIC(SetInsert, SetElement)
-#define SetContains(SetElement) GENERIC(SetContains, SetElement)
-#define SetRemove(SetElement) GENERIC(SetRemove, SetElement)
-#define SetDestroy(SetElement) GENERIC(SetDestroy, SetElement)
-#define SetCursor(SetElement) GENERIC(SetCursor, SetElement)
-#define SetCursorCreate(SetElement) GENERIC(SetCursorCreate, SetElement)
-#define SetCursorNext(SetElement) GENERIC(SetCursorNext, SetElement)
-#endif
-
 #include <core/Core.h>
 
-#ifndef DISABLE_Dictionary_SetElement_Unit
+#define Set(SetElement) GENERIC(Set, SetElement)
+#define SetDefault(SetElement) CONCAT(Set(SetElement), Default)
+#define SetCreateWithCapacity(SetElement) CONCAT(Set(SetElement), CreateWithCapacity)
+#define SetCount(SetElement) CONCAT(Set(SetElement), Count)
+#define SetInsert(SetElement) CONCAT(Set(SetElement), Insert)
+#define SetContains(SetElement) CONCAT(Set(SetElement), Contains)
+#define SetRemove(SetElement) CONCAT(Set(SetElement), Remove)
+#define SetDestroy(SetElement) CONCAT(Set(SetElement), Destroy)
+
+#define SetCursor(SetElement) GENERIC(SetCursor, SetElement)
+#define SetCursorCreate(SetElement) CONCAT(SetCursor(SetElement), Create)
+#define SetCursorNext(SetElement) CONCAT(SetCursor(SetElement), Next)
+#define SetCursorClone(SetElement) CONCAT(SetCursor(SetElement), Clone)
+#define SetCursorDestroy(SetElement) CONCAT(SetCursor(SetElement), Destroy)
+#define SetCursorAsCursor(SetElement) CONCAT(SetCursor(SetElement), As, Cursor(Ref(SetElement)))
+#endif
+
+#ifdef SetElement
 #define DictionaryKey SetElement
 #define DictionaryKeyHash SetElementHash
 #define DictionaryKeyEqual SetElementEqual
 #define DictionaryValue Unit
 #include <core/collections/Dictionary.h>
-#endif
-#undef DISABLE_Dictionary_SetElement_Unit
 
-#ifndef DISABLE_Cursor_SetElement
-#define CursorElement SetElement
-#include <core/collections/Cursor.h>
-#endif
-#undef DISABLE_Cursor_SetElement
+#define RefT SetElement
+#include <core/Ref.h>
+
+#define OptionValue Ref(SetElement)
+#include <core/Option.h>
+
+#define CursorElement Ref(SetElement)
+#include <core/collections/cursors/Cursor.h>
 
 typedef Dictionary(SetElement, Unit) Set(SetElement);
 
-static Set(SetElement) SetDefault(SetElement)() {
-  return DictionaryDefault(SetElement, Unit)();
-}
-
-static Set(SetElement) SetCreateWithCapacity(SetElement)(UInt capacity) {
-  return DictionaryCreateWithCapacity(SetElement, Unit)(capacity);
-}
-
-static UInt SetCount(SetElement)(Set(SetElement) const* set) {
-  return DictionaryCount(SetElement, Unit)(set);
-}
-
-static Bool SetInsert(SetElement)(Set(SetElement) * set, SetElement element) {
-  return DictionaryInsert(SetElement, Unit)(set, element, (Unit){}).tag == Option_None;
-}
-
-static Bool SetContains(SetElement)(Set(SetElement) const* set, SetElement element) {
-  return DictionaryContainsKey(SetElement, Unit)(set, element);
-}
-
-static Bool SetRemove(SetElement)(Set(SetElement) * set, SetElement element) {
-  return DictionaryRemove(SetElement, Unit)(set, element).tag == Option_Some;
-}
-
-static void SetDestroy(SetElement)(Set(SetElement) set) {
-  DictionaryDestroy(SetElement, Unit)(set);
-}
+Set(SetElement) SetDefault(SetElement)();
+Set(SetElement) SetCreateWithCapacity(SetElement)(UInt capacity);
+UInt SetCount(SetElement)(Set(SetElement) const* set);
+Bool SetInsert(SetElement)(Set(SetElement) * set, SetElement element);
+Bool SetContains(SetElement)(Set(SetElement) const* set, SetElement* element);
+Option(SetElement) SetRemove(SetElement)(Set(SetElement) * set, SetElement* element);
+Unit SetDestroy(SetElement)(Set(SetElement) * set);
 
 typedef DictionaryCursor(SetElement, Unit) SetCursor(SetElement);
 
-static SetCursor(SetElement) SetCursorCreate(SetElement)(Set(SetElement) const* set) {
+SetCursor(SetElement) SetCursorCreate(SetElement)(Set(SetElement) const* set);
+Option(Ref(SetElement)) SetCursorNext(SetElement)(SetCursor(SetElement) * cursor);
+SetCursor(SetElement) SetCursorClone(SetElement)(SetCursor(SetElement) const* cursor);
+Unit SetCursorDestroy(SetElement)(SetCursor(SetElement) * cursor);
+IMPLEMENT_SIG(SetCursor(SetElement), Cursor(Ref(SetElement)));
+
+#ifdef SET_IMPLEMENTATION
+COREAPI Set(SetElement) SetDefault(SetElement)() {
+  return DictionaryDefault(SetElement, Unit)();
+}
+
+COREAPI Set(SetElement) SetCreateWithCapacity(SetElement)(UInt capacity) {
+  return DictionaryCreateWithCapacity(SetElement, Unit)(capacity);
+}
+
+COREAPI UInt SetCount(SetElement)(Set(SetElement) const* set) {
+  return DictionaryCount(SetElement, Unit)(set);
+}
+
+COREAPI Bool SetInsert(SetElement)(Set(SetElement) * set, SetElement element) {
+  auto unit     = (Unit){};
+  auto previous = DictionaryInsert(SetElement, Unit)(set, &element, &unit);
+  match(&previous) {
+    case (OptionNone) {
+      return true;
+    }
+    case (OptionSome) {
+      return false;
+    }
+  }
+}
+
+COREAPI Bool SetContains(SetElement)(Set(SetElement) const* set, SetElement* element) {
+  return DictionaryContainsKey(SetElement, Unit)(set, element);
+}
+
+COREAPI Option(SetElement) SetRemove(SetElement)(Set(SetElement) * set, SetElement* element) {
+  auto removed = DictionaryRemove(SetElement, Unit)(set, element);
+  match(&removed) {
+    case (OptionSome, tup) {
+      return OptionSome(SetElement)(tup->_0);
+    }
+    case (OptionNone) {
+      return OptionNone(SetElement)();
+    }
+  }
+}
+
+COREAPI Unit SetDestroy(SetElement)(Set(SetElement) * set) {
+  return DictionaryDestroy(SetElement, Unit)(set);
+}
+
+COREAPI SetCursor(SetElement) SetCursorCreate(SetElement)(Set(SetElement) const* set) {
   return DictionaryCursorCreate(SetElement, Unit)(set);
 }
 
-static Option(SetElement) SetCursorNext(SetElement)(SetCursor(SetElement) * cursor) {
-  auto result = DictionaryCursorNext(SetElement, Unit)(cursor);
-  return result.tag == Option_Some
-           ? OptionSome(SetElement)(result.value._0)
-           : OptionNone(SetElement)();
+COREAPI Option(Ref(SetElement)) SetCursorNext(SetElement)(SetCursor(SetElement) * cursor) {
+  auto next = DictionaryCursorNext(SetElement, Unit)(cursor);
+  match(&next) {
+    case (OptionSome, entry) {
+      return OptionSome(Ref(SetElement))(&(*entry)->_0);
+    }
+    case (OptionNone) {
+      return OptionNone(Ref(SetElement))();
+    }
+  }
 }
 
-implement(
-  Cursor(SetElement),
-  SetCursor(SetElement),
-  .Next = (void*)SetCursorNext(SetElement),
-);
+COREAPI SetCursor(SetElement) SetCursorClone(SetElement)(SetCursor(SetElement) const* cursor) {
+  return DictionaryCursorClone(SetElement, Unit)(cursor);
+}
 
+COREAPI Unit SetCursorDestroy(SetElement)(SetCursor(SetElement) * cursor) {
+  return DictionaryCursorDestroy(SetElement, Unit)(cursor);
+}
+
+COREAPI IMPLEMENT(
+  SetCursor(SetElement),
+  Cursor(Ref(SetElement)),
+  .Next    = (void*)SetCursorNext(SetElement),
+  .Destroy = (void*)SetCursorDestroy(SetElement),
+);
+#endif // SET_IMPLEMENTATION
+#endif // SetElement
+
+#undef SET_IMPLEMENTATION
 #undef SetElement
 #undef SetElementHash
 #undef SetElementEqual
+#undef SetElementClone
+#undef SetElementDestroy
