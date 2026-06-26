@@ -8,9 +8,11 @@ Core is a collection of reusable C general purpose functions as well as generic 
 #include <core/Core.h>
 #include <stdio.h>
 
+#define LIST_IMPLEMENTATION
 #define ListElement Int
 #include <core/collections/List.h>
 
+#define LIST_IMPLEMENTATION
 #define ListElement Char
 #include <core/collections/List.h>
 
@@ -24,12 +26,12 @@ Int32 main() {
   }
 
   for (auto i = 0; i < ListCount(Int)(&index); ++i) {
-    printf("%d: ", ListAt(Int)(&index, i));
-    printf("%c\n", ListAt(Char)(&chars, i));
+    printf("%d: ", *ListAt(Int)(&index, i));
+    printf("%c\n", *ListAt(Char)(&chars, i));
   }
 
-  ListDestroy(Int)(list);
-  ListDestroy(Char)(chars);
+  ListDestroy(Int)(&index);
+  ListDestroy(Char)(&chars);
 
   return 0;
 }
